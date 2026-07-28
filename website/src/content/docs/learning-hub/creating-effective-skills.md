@@ -3,7 +3,7 @@ title: 'Creating Effective Skills'
 description: 'Master the art of writing reusable, shareable skill folders that deliver consistent results across your team.'
 authors:
   - GitHub Copilot Learning Hub Team
-lastUpdated: 2026-07-13
+lastUpdated: 2026-07-28
 estimatedReadingTime: '9 minutes'
 tags:
   - skills
@@ -380,6 +380,24 @@ copilot skill add ./my-skill/           # add a skill from a local directory
 copilot skill add https://example.com/skill.zip  # add a skill from a URL
 copilot skill remove my-skill           # remove an installed skill by name
 ```
+
+*(v1.0.72+)* You can also install skills through the plugins system, which is useful for distributing skills without bundling them in a full plugin:
+
+```bash
+# Install a skill from a local directory
+copilot plugins install --skill ./my-skill/
+
+# Install a skill from a URL
+copilot plugins install --skill https://example.com/my-skill.zip
+
+# Install a skill scoped to the current repository
+copilot plugins install --skill ./my-skill/ --scope project
+
+# Remove an installed skill
+copilot plugins remove --skill my-skill
+```
+
+Skills installed via `copilot plugins install --skill` appear in `copilot skill list` and are active immediately without restarting Copilot CLI. Use `--scope project` for skills that should only apply within the current repository.
 
 You can also run `/skill` (or the existing `/skills`) inside an interactive session to see what's loaded. The `copilot skill` subcommand is the recommended way to install skills that aren't packaged inside a plugin.
 

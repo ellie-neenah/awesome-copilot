@@ -3,7 +3,7 @@ title: 'Copilot Configuration Basics'
 description: 'Learn how to configure GitHub Copilot at user, workspace, and repository levels to optimize your AI-assisted development experience.'
 authors:
   - GitHub Copilot Learning Hub Team
-lastUpdated: 2026-07-13
+lastUpdated: 2026-07-28
 estimatedReadingTime: '10 minutes'
 tags:
   - configuration
@@ -223,7 +223,7 @@ The `~/.agents/skills/` path aligns with the VS Code GitHub Copilot for Azure ex
 
 | Field | Description | Example values |
 |-------|-------------|----------------|
-| `model` | The AI model to use for this repository | `"claude-sonnet-4"`, `"gpt-4.1"`, `"claude-sonnet-5"` |
+| `model` | The AI model to use for this repository | `"claude-sonnet-4"`, `"gpt-4.1"`, `"claude-opus-5"` |
 | `effortLevel` | Reasoning effort level | `"low"`, `"medium"`, `"high"` |
 | `contextTier` | How much context to include | `"default"`, `"full"` |
 
@@ -232,6 +232,38 @@ In addition to model and effort settings, this file can also extend the URL, MCP
 **Why use this**: Pin a model when your team has agreed on the right cost/quality tradeoff for a project. Pin a high effort level for codebases where mistakes are expensive. Deny lists let you block specific MCP servers or URLs that aren't appropriate for a given project's security posture.
 
 > **Trust requirement**: The repository must be explicitly trusted by the user for these settings to take effect. This prevents untrusted repositories from changing your model or access restrictions without your knowledge.
+
+### Per-Session Model Overrides
+
+*(v1.0.72+)* You can change the model, reasoning effort, or context window for just the **current session** without affecting your global settings:
+
+```
+/model --session claude-opus-5
+```
+
+Or using the short flag:
+
+```
+/model -s gpt-5.6 --effort high
+```
+
+The session-scoped model reverts to your global setting as soon as you leave that session. This is useful when you want to temporarily use a more capable (or more affordable) model for a specific task without changing your defaults.
+
+### Choosing a Model for Plan Mode
+
+*(v1.0.74+)* Plan mode (activated with `/plan`) now supports a **dedicated model** for the planning phase. Use `/model plan` (or `/model --plan`) to pick a model specifically for plan mode:
+
+```
+/model plan claude-opus-5
+```
+
+Pass `off` to clear the plan-mode model (reverting to the session model when you enter plan mode), or omit an argument to open the model picker:
+
+```
+/model --plan off
+```
+
+This allows you to use a high-quality reasoning model while planning, then switch to a faster model for execution — optimizing for both quality and cost.
 
 ### Custom Agents
 
