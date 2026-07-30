@@ -3,7 +3,7 @@ title: 'Installing and Using Plugins'
 description: 'Learn how to find, install, and manage plugins that extend GitHub Copilot CLI with reusable agents, skills, hooks, and integrations.'
 authors:
   - GitHub Copilot Learning Hub Team
-lastUpdated: 2026-07-13
+lastUpdated: 2026-07-30
 estimatedReadingTime: '8 minutes'
 tags:
   - plugins
@@ -31,7 +31,7 @@ A plugin bundles one or more of the following components:
 | **Custom Agents** | Specialized AI assistants with tailored expertise | `agents/*.agent.md` |
 | **Skills** | Discrete callable capabilities with bundled resources | `skills/*/SKILL.md` |
 | **Hooks** | Event handlers that intercept agent behavior | `hooks.json` or `hooks/` |
-| **MCP Servers** | Model Context Protocol integrations for external tools | `.mcp.json` or `.github/mcp.json` |
+| **MCP Servers** | Model Context Protocol integrations for external tools | `.mcp.json` or `.github/mcp.json` (Open Plugin Spec v1) |
 | **LSP Servers** | Language Server Protocol integrations | `lsp.json` or `.github/lsp.json` |
 | **Extensions** | IDE extensions installable via the plugin marketplace (v1.0.62+) | `extensions/` |
 
@@ -73,6 +73,8 @@ The `plugin.json` manifest declares what the plugin contains:
   ]
 }
 ```
+
+> **Open Plugin Spec v1 (v1.0.74+)**: Copilot CLI now supports **Open Plugin Spec v1** plugin manifests and `mcp.json` configuration files. This is an emerging open standard for packaging AI agent capabilities portably across tools. If you're publishing a plugin meant to be interoperable with multiple AI coding tools, follow the Open Plugin Spec v1 format for your manifest and MCP server configuration.
 
 ## Why Use Plugins?
 
@@ -221,6 +223,20 @@ copilot plugin marketplace update
 # Remove a plugin
 copilot plugin uninstall my-plugin
 ```
+
+### Enabling and Disabling Plugin Components
+
+*(v1.0.76+)* The `/plugins` command now supports granular **enable/disable controls** for individual plugin components without uninstalling the plugin. This lets you temporarily disable specific agents, instructions, skills, LSP servers, or hooks from a plugin while keeping the rest active:
+
+```
+/plugins
+```
+
+In the `/plugins` dialog, toggle individual components on or off. Disabled components are excluded from Copilot's active context until re-enabled. This is useful when:
+
+- A plugin's hooks conflict with your current workflow
+- You want only some agents from a multi-agent plugin
+- You're debugging and want to isolate which component is causing an issue
 
 ### Loading Plugins from a Local Directory
 

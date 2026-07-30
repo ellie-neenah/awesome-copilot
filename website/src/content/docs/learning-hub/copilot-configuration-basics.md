@@ -3,7 +3,7 @@ title: 'Copilot Configuration Basics'
 description: 'Learn how to configure GitHub Copilot at user, workspace, and repository levels to optimize your AI-assisted development experience.'
 authors:
   - GitHub Copilot Learning Hub Team
-lastUpdated: 2026-07-13
+lastUpdated: 2026-07-30
 estimatedReadingTime: '10 minutes'
 tags:
   - configuration
@@ -428,7 +428,7 @@ CLI settings use **camelCase** naming. Key settings added in recent releases:
 | `continueOnAutoMode` | Automatically switch to the auto model on rate limit instead of pausing |
 | `proxy` | HTTP(S) proxy URL for all outbound CLI requests (e.g., `http://proxy.example.com:8080`) (v1.0.64+) |
 | `sessionLimits` | Restrict credit or turn usage for a session; limits apply across the current conversation and reset on `/clear` (v1.0.66+) |
-| `stayInAutopilot` | Keep the CLI in autopilot mode after an autopilot task completes, instead of returning to interactive mode (v1.0.69+) |
+| `stayInAutopilot` | *(v1.0.76+)* Autopilot stays selected after `task_complete` by default. Set to `false` to return to interactive mode after each task instead. Previously (v1.0.69–v1.0.75) this setting was `false` by default and had to be set to `true` to stay in autopilot. |
 
 > **Note**: Older snake_case names (e.g., `include_gitignored`, `auto_updates_channel`) are still accepted for backward compatibility, but camelCase is now the preferred format.
 
@@ -448,6 +448,10 @@ The model picker opens in a **full-screen view** with inline reasoning effort ad
 **Auto mode and server-side model routing** (v1.0.43+): When you select **Auto** as your model, the CLI uses server-side model routing for real-time model selection. Instead of locking in a single model at session start, Auto mode evaluates each request and routes it to the most appropriate model dynamically. This means straightforward questions can be handled by a faster model while complex reasoning tasks are automatically escalated — without you needing to switch models manually.
 
 **Model family aliases** (v1.0.64+): Instead of typing a full model name, you can use short family aliases in the model setting: `opus`, `sonnet`, `haiku` (Anthropic), and `gpt`, `gemini` (Google/OpenAI). The CLI resolves the alias to the latest available model in that family. This is especially useful in scripts or configuration files where you want to track the best model in a family without hardcoding a version string.
+
+**Recent model additions**: As of late July 2026, Copilot CLI also supports **Claude Opus 5** (v1.0.75), **grok-4.5** (v1.0.76), and **gemini-3.6-flash** (v1.0.74). Use `/model` to open the picker and browse all currently available models.
+
+**Plan mode model** (v1.0.74+): Use `/model plan` (or `/model --plan`) to set a different model specifically for plan mode. Pass a model ID to assign it, `off` to clear the override, or no argument to open the picker. When you leave plan mode, the session reverts to the regular session model. This lets you use a faster or cheaper model for planning while reserving a more capable model for execution.
 
 ### CLI Session Commands
 
@@ -532,6 +536,8 @@ The `/fork` command (v1.0.45+) copies the current session into a **new independe
 ```
 
 After forking, the new session is immediately active. Both sessions share the same history up to the fork point but accumulate changes independently from that moment forward. Use `/fork` to experiment with a risky refactor without abandoning your current working session. Since v1.0.47, forked sessions display their **origin session** name in the sessions dialog, making it easy to trace which session a fork came from.
+
+**Sessions sidebar (v1.0.76, experimental)**: A new Sessions sidebar lets you manage multiple concurrent CLI sessions from a single window — switch between them, spawn new ones, and see their status at a glance. Enable it with `/experimental on`. This complements `/fork` and `/new` by giving you a persistent visual overview of all backgrounded and active sessions instead of relying solely on the sessions dialog.
 
 The `/cd` command changes the working directory for the current session. Since v1.0.65, the working directory **persists when you resume a session** — if you restart the CLI and resume, you return to the same directory automatically. Changing directory also triggers discovery of custom agents in the new location, so switching to a different project loads its agents without a restart:
 
@@ -760,6 +766,8 @@ copilot --no-sandbox -p "Set up development environment with system tools"
 ```
 
 These flags apply only to the current invocation — your persisted sandbox preference remains unchanged.
+
+> **Enterprise sandbox enforcement (v1.0.76+)**: Enterprise administrators can now enforce a **managed sandbox floor** via organization settings. When active, the managed policy tightens — but never loosens — a user's sandbox configuration. The `/sandbox` dialog surfaces org-configured values with locked fields and managed filesystem paths, so users can see exactly what is enforced without being able to disable it. This ensures sandboxing requirements are met across all users in the organization.
 
 The `--attachment` flag (available in prompt mode, `-p`) lets you attach files — images or native documents — to the initial prompt in non-interactive mode:
 
