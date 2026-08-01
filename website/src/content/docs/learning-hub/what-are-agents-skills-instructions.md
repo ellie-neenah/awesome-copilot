@@ -3,8 +3,8 @@ title: 'What are Agents, Skills, and Instructions'
 description: 'Understand the primary customization primitives that extend GitHub Copilot for specific workflows.'
 authors:
   - GitHub Copilot Learning Hub Team
-lastUpdated: 2026-02-26
-estimatedReadingTime: '7 minutes'
+lastUpdated: 2026-08-01
+estimatedReadingTime: '9 minutes'
 prev: false
 ---
 
@@ -74,24 +74,103 @@ Instructions sit under `instructions/` and can be scoped globally, per language,
 - You are codifying architecture decisions or compliance requirements.
 - You want Copilot to understand patterns without manually pasting context.
 
+## Hooks
+
+Hooks are shell commands or scripts that run automatically at key lifecycle events during a Copilot agent session — when a session starts or ends, when the agent uses a tool, or when a prompt is submitted. Unlike instructions and skills (which guide the AI), hooks are deterministic: they run outside the model and always execute reliably.
+
+Hooks are stored as JSON files in `.github/hooks/` and support events like `preToolUse`, `postToolUse`, `sessionStart`, `sessionEnd`, `agentStop`, and more.
+
+```json
+{
+  "version": 1,
+  "hooks": {
+    "postToolUse": [
+      {
+        "type": "command",
+        "bash": "npx prettier --write .",
+        "cwd": ".",
+        "timeoutSec": 30
+      }
+    ]
+  }
+}
+```
+
+### When to reach for hooks
+
+- You want formatting, linting, or validation to happen reliably after every edit.
+- You need to block dangerous commands or enforce security policies.
+- You want to inject dynamic context (git state, environment info) into sessions automatically.
+- You need audit logs, notifications, or compliance checks for autonomous agent work.
+
+## Agentic Workflows
+
+Agentic Workflows are AI-powered automations that run coding agents inside GitHub Actions. Written as a single Markdown file with natural language instructions and YAML frontmatter (triggers, permissions, safe outputs), they handle recurring tasks like issue triage, daily reports, and compliance checks — triggered by schedules, events, or slash commands.
+
+```markdown
+---
+name: "Daily Issues Report"
+description: "Generates a daily summary of open issues"
+on:
+  schedule: daily on weekdays
+permissions:
+  contents: read
+  issues: read
+safe-outputs:
+  create-issue:
+    title-prefix: "[daily-report] "
+    labels: [report]
+---
+
+Summarize the open issues that need attention today...
+```
+
+Agentic workflows are compiled from `.md` sources to `.lock.yml` files using the `gh aw` CLI, then run by GitHub Actions.
+
+### When to reach for agentic workflows
+
+- You need scheduled or event-driven automation that goes beyond static GitHub Actions.
+- You want a task that requires reasoning, summarization, or context-aware decisions.
+- You want to automate repository maintenance without writing YAML actions syntax.
+
+## Plugins
+
+Plugins are installable packages that bundle agents, skills, hooks, and MCP server configurations into a single installable unit. Instead of manually copying files across projects, you can install a curated set of capabilities with one command:
+
+```bash
+copilot plugin install database-data-management@awesome-copilot
+```
+
+Plugins are distributed via marketplaces (the `awesome-copilot` and `copilot-plugins` marketplaces are registered by default), making it easy for teams to standardize tooling across all their projects.
+
+### When to reach for plugins
+
+- You want to share a curated set of agents, skills, and hooks across multiple repositories or team members.
+- You want one-command installation rather than copying individual files into each project.
+- You're building internal tooling that your organization should be able to install consistently.
+
 ## How the artifacts work together
 
 Think of these artifacts as complementary layers:
 
-1. **Instructions** lay the groundwork with long-lived guardrails.
-2. **Skills** let you trigger rich, reusable workflows on demand—and let agents discover those workflows automatically.
+1. **Instructions** lay the groundwork with long-lived guardrails — always active, no invocation needed.
+2. **Skills** let you trigger rich, reusable workflows on demand, and let agents discover those workflows automatically.
 3. **Agents** bring the most opinionated behavior, bundling tools and instructions into a single persona.
+4. **Hooks** add deterministic automation — reliable formatting, linting, and governance that doesn't depend on the AI remembering to do it.
+5. **Agentic Workflows** extend the above into scheduled and event-driven GitHub Actions automations.
+6. **Plugins** package all of the above into installable, shareable units for teams and organizations.
 
-By combining all three, teams can achieve:
+By combining these primitives, teams can achieve:
 
 - Consistent onboarding for new developers.
 - Repeatable operations tasks with reduced context switching.
 - Tailored experiences for specialized domains (security, infrastructure, data science, etc.).
+- Automated repository maintenance that runs on schedule or in response to events.
 
 ## Next steps
 
-- Explore the rest of the **Fundamentals** track for deeper dives on chat modes, collections, and MCP servers.
-- Browse the [Awesome Agents](../../agents/), [Skills](../../skills/), and [Instructions](../../instructions/) directories for inspiration.
+- Explore the **Fundamentals** track for deeper dives: [Agents and Subagents](../agents-and-subagents/), [Automating with Hooks](../automating-with-hooks/), [Agentic Workflows](../agentic-workflows/).
+- Browse the [Agents](../../agents/), [Skills](../../skills/), [Instructions](../../instructions/), [Hooks](../../hooks/), and [Plugins](../../plugins/) directories for ready-to-use resources.
 - Try generating your own artifacts, then add them to the repo to keep the Learning Hub evolving.
 
 ---

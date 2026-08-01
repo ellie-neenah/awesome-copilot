@@ -3,8 +3,8 @@ title: 'GitHub Copilot Terminology Glossary'
 description: 'A quick reference guide defining common GitHub Copilot and platform-specific terms.'
 authors:
   - GitHub Copilot Learning Hub Team
-lastUpdated: 2026-04-02
-estimatedReadingTime: '8 minutes'
+lastUpdated: 2026-08-01
+estimatedReadingTime: '10 minutes'
 tags:
   - glossary
   - terminology
@@ -262,6 +262,58 @@ tools: ['codebase', 'terminalCommand', 'github']
 ```
 
 **Related terms**: [MCP](#mcp-model-context-protocol), [Built-in Tool](#built-in-tool), [Agent](#agent)
+
+---
+
+### Agentic Workflow
+
+An AI-powered GitHub Actions automation defined as a single Markdown file. The file combines YAML frontmatter (triggers, permissions, safe outputs) with natural language instructions that a coding agent follows at runtime. Agentic workflows are compiled from `.md` sources to `.lock.yml` files via the `gh aw` CLI and run inside GitHub Actions.
+
+**Example**: A workflow that runs every weekday morning, reads open issues, and creates a prioritized daily summary issue automatically.
+
+**Key characteristics**:
+- Written in Markdown — no YAML actions syntax required
+- Triggered by schedules, repository events, or slash commands
+- Use least-privilege permissions and safe outputs for security
+- Compiled to `.lock.yml` via `gh extension install github/gh-aw`
+
+**When to use**: For recurring, event-driven automation that requires reasoning, summarization, or context-aware decisions — beyond what static GitHub Actions can do.
+
+**Learn more**: [Agentic Workflows](../agentic-workflows/)
+
+**Related terms**: [Coding Agent](#coding-agent), [Hook](#hook)
+
+---
+
+### Canvas Extension
+
+An interactive work surface inside the GitHub Copilot app where people and agents can collaborate on shared artifacts. Instead of keeping progress in a chat thread, a canvas displays the actual work — a board, document, checklist, browser-assisted surface, or custom UI. Both the user and the agent can read and update the canvas in real time.
+
+Canvas extensions are created via `/create-canvas` in an active Copilot app session, then iterated on through conversation. They can be packaged and shared as project or personal extensions.
+
+**Example**: An issue triage canvas with filtering, label editing, and quick-priority buttons that the agent can update alongside the user.
+
+**When to use**: For workflows where visibility and steering matter — release coordination, planning documents, triage boards, or any task where a persistent shared work surface beats a long chat log.
+
+**Learn more**: [Working with Canvas Extensions](../working-with-canvas-extensions/)
+
+**Related terms**: [Agent](#agent)
+
+---
+
+### Remote Control
+
+A feature that lets you connect to and steer a running Copilot coding agent session from a local CLI terminal in real time. Remote control lets you observe the agent's progress, send follow-up prompts, and redirect its work without waiting for it to open a pull request.
+
+Enable remote control in a session with `/remote on`, or start a remote-enabled session with `copilot --remote`. Active coding agent sessions from the repository appear in the **Remote** tab of the CLI; select one to begin sending steering messages.
+
+**Example**: You assign an issue to the coding agent, then reconnect 10 minutes later to redirect it away from an approach you realize won't work.
+
+**When to use**: For long-running coding agent tasks where mid-course corrections or clarifications can save time and prevent wasted effort.
+
+**Learn more**: [Using the Copilot Coding Agent](../using-copilot-coding-agent/#remote-control)
+
+**Related terms**: [Coding Agent](#coding-agent), [Agent](#agent)
 
 ---
 
