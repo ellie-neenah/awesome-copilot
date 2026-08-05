@@ -3,7 +3,7 @@ title: 'Copilot Configuration Basics'
 description: 'Learn how to configure GitHub Copilot at user, workspace, and repository levels to optimize your AI-assisted development experience.'
 authors:
   - GitHub Copilot Learning Hub Team
-lastUpdated: 2026-07-13
+lastUpdated: 2026-08-05
 estimatedReadingTime: '10 minutes'
 tags:
   - configuration
@@ -429,8 +429,11 @@ CLI settings use **camelCase** naming. Key settings added in recent releases:
 | `proxy` | HTTP(S) proxy URL for all outbound CLI requests (e.g., `http://proxy.example.com:8080`) (v1.0.64+) |
 | `sessionLimits` | Restrict credit or turn usage for a session; limits apply across the current conversation and reset on `/clear` (v1.0.66+) |
 | `stayInAutopilot` | Keep the CLI in autopilot mode after an autopilot task completes, instead of returning to interactive mode (v1.0.69+) |
+| `showToolDurations` | Show how long each tool call took in timeline headers; set to `false` to disable (v1.0.78+) |
 
 > **Note**: Older snake_case names (e.g., `include_gitignored`, `auto_updates_channel`) are still accepted for backward compatibility, but camelCase is now the preferred format.
+
+**Signing in** *(v1.0.77+)*: `copilot login` now defaults to a **browser-based OAuth flow** on local interactive terminals — a browser window opens and you approve the login without entering a device code. On remote, headless, or CI environments the device-code flow is still used automatically. You can override the default with `--web-flow` or `--device-code`, or choose interactively with `/login`.
 
 In addition to the main config file, GitHub Copilot CLI reads two optional per-project files for repository-specific overrides:
 
@@ -507,11 +510,13 @@ You can also press **x** on a highlighted session in the session picker (`--resu
 
 In the session picker, press **`s`** to cycle the sort order: relevance, last used, created, or name. The picker also shows the branch name and idle/in-use status for each session.
 
-The `/rewind` command opens a timeline picker that lets you roll back the conversation to any earlier point in history, reverting both the conversation and any file changes made after that point. You can also trigger it by pressing **double-Esc**:
+The `/rewind` command opens a timeline picker that lets you roll back the conversation to any earlier point in history. You can also trigger it by pressing **double-Esc**:
 
 ```
 /rewind
 ```
+
+When you select a point to rewind to, Copilot asks whether you want to restore the conversation only, or the conversation and any file changes made after that point. In either case, only files that Copilot itself changed are considered for restoration — files you edited manually are left untouched. As of v1.0.78, `/rewind` no longer requires git to be initialized in the project.
 
 Use `/rewind` when you want to branch off from a different point in the conversation, rather than just undoing the most recent turn.
 
@@ -554,6 +559,12 @@ In v1.0.66+, you can pass a task description to `/worktree` to name the branch f
 ```
 
 This creates a branch named from your task description and begins working on it immediately, making it easy to spin up parallel work without stopping to think of a branch name.
+
+In v1.0.79+, use `/worktree new` to open a fresh conversation in a new worktree without moving the current session's changes. This is useful when you want to start an independent task from a clean state while keeping the current session active:
+
+```
+/worktree new
+```
 
 After the command runs, the session is inside the new worktree. Use this when you want to work on a second task in parallel without stashing changes or opening a new terminal. In v1.0.64+ you can also use the experimental `--worktree` flag at startup (`copilot -w [name]`) to create or reuse a worktree under `<repo>.worktrees/` before the session begins.
 
@@ -711,6 +722,14 @@ The `/autopilot` command (v1.0.45+) is a quick in-session toggle that switches b
 
 Use `/autopilot` when you want to flip between supervised and unsupervised operation mid-session without typing out the full `/allow-all on` or `/allow-all off` commands.
 
+The `/permissions` command *(v1.0.78+)* is an interactive alternative to `/allow-all` and `/autopilot` that lets you switch between approval modes from a menu. Open it at any point in a session to choose how Copilot handles tool permission requests:
+
+```
+/permissions        # open the approval mode picker
+```
+
+The picker presents all available modes — including standard interactive approval, autopilot (approve all), and auto (LLM-judged) — in one place. Use `/permissions` when you want a guided experience for changing modes rather than remembering the specific slash command for each.
+
 > **Enhanced autopilot (v1.0.64+)**: When autopilot mode is active — including when launched with `--autopilot` at startup or during automatic continuation turns — the agent automatically handles elicitation dialogs, `ask_user` prompts, sampling requests, and permission prompts without surfacing them as interactive dialogs. This means long-running automated sessions can proceed end-to-end without manual confirmation steps.
 
 > **Auto allow-all mode (v1.0.69+)**: In addition to the standard allow-all mode (which approves everything), the CLI now supports an **auto allow-all** mode that uses an LLM judge to evaluate each tool request. When enabled, the judge automatically approves requests it evaluates as acceptable, and asks you for manual confirmation only for requests it considers risky. This gives you a middle ground between full autopilot and fully supervised operation — most routine actions proceed automatically while unusual or potentially dangerous actions still surface for your review. As of v1.0.69-3, this mode requires experimental features to be enabled — use `/experimental on` or start the CLI with `--experimental` — then activate it with `/allow-all auto`. The previous `AUTO_APPROVAL` environment variable approach has been removed in favour of experimental mode.
@@ -760,6 +779,18 @@ copilot --no-sandbox -p "Set up development environment with system tools"
 ```
 
 These flags apply only to the current invocation — your persisted sandbox preference remains unchanged.
+
+The **`allowDevToolAccess`** sandbox setting *(v1.0.79+, on by default)* grants sandboxed builds access to toolchain caches, package registries, and dev-tool installations so builds work without extra configuration. Set it to `false` in `settings.json` to opt out:
+
+```json
+{
+  "sandbox": {
+    "allowDevToolAccess": false
+  }
+}
+```
+
+> **Breaking change from v1.0.79**: This setting was previously named `allowDevToolCaches` in v1.0.78. The old name is ignored silently — rename it in your `settings.json` and in any managed/MDM policy files.
 
 The `--attachment` flag (available in prompt mode, `-p`) lets you attach files — images or native documents — to the initial prompt in non-interactive mode:
 
