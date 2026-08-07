@@ -3,7 +3,7 @@ title: 'Agents and Subagents'
 description: 'Learn how delegated subagents differ from primary agents, when to use them, and how to launch them in VS Code and Copilot CLI.'
 authors:
   - GitHub Copilot Learning Hub Team
-lastUpdated: 2026-07-01
+lastUpdated: 2026-08-07
 estimatedReadingTime: '9 minutes'
 tags:
   - agents
@@ -156,6 +156,63 @@ The **complementary model strategy** lets you specify that the rubber-duck agent
 Because it runs as a sub-agent layer rather than replacing your primary model, you keep your current session model and context while the rubber-duck analysis runs in the background.
 
 > **Note**: This is an experimental feature and may change. Provide feedback via `/feedback` if you find it useful.
+
+## Managing multiple concurrent sessions in Copilot CLI
+
+*(v1.0.79+)* Copilot CLI now supports running **multiple sessions in parallel** from a single terminal window, each with its own isolated context, model, and conversation history. This is useful when you want to work on several independent tasks simultaneously without spawning separate terminal windows.
+
+### Sessions sidebar
+
+The **Sessions sidebar** lets you switch between active sessions, spawn new ones, and see their status at a glance:
+
+- Press **`n`** to open a new session, **`x` twice** to close the current one
+- Arrow keys navigate the session list; **Enter** or a click switches to a session
+- The active session card is highlighted so you always know which session is focused
+- Sessions persist across restarts — your context is restored when you reopen the CLI
+
+```text
+/sessions           # open or toggle the Sessions sidebar
+```
+
+Turn on the sidebar in settings if it is not already visible:
+
+```text
+/settings sidebar.enabled true
+```
+
+### Parallel worktree sessions with `/worktree`
+
+*(v1.0.79+)* Use `/worktree new` to start a **fresh session in a new git worktree**. Each worktree has its own isolated branch and working directory, so multiple sessions can modify files simultaneously without conflicts:
+
+```text
+/worktree new       # creates a new worktree and opens a new session inside it
+```
+
+This is different from the existing `/move` command, which carries your *uncommitted changes* into a new worktree. `/worktree new` (or the older `/new-worktree`) leaves your changes behind and gives the new session a clean slate.
+
+**Typical parallel-work pattern**:
+
+1. Start your main session for feature work
+2. Run `/worktree new` to open a second session for a separate bug fix or research task
+3. Use the Sessions sidebar to switch between them — each session keeps its own history and model
+
+### Controlling agent approval modes with `/permissions`
+
+*(v1.0.78+)* The `/permissions` command lets you switch between agent approval modes without leaving your session:
+
+```text
+/permissions        # open the permissions panel
+```
+
+The three modes control how much the agent can do without asking for your approval:
+
+| Mode | Description |
+|------|-------------|
+| **Interactive** | Agent asks for approval before each tool call (default) |
+| **Plan** | Agent drafts a plan and waits for your approval before executing |
+| **Autopilot** | Agent executes autonomously; approval required only for sensitive operations |
+
+You can switch modes mid-session as your trust level or task scope changes — for example, start in Plan mode to review a risky refactor, then switch to Interactive for fine-grained control once you're comfortable.
 
 ## Orchestration patterns that work well
 
