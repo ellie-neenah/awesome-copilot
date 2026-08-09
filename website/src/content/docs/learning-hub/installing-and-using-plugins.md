@@ -3,7 +3,7 @@ title: 'Installing and Using Plugins'
 description: 'Learn how to find, install, and manage plugins that extend GitHub Copilot CLI with reusable agents, skills, hooks, and integrations.'
 authors:
   - GitHub Copilot Learning Hub Team
-lastUpdated: 2026-07-13
+lastUpdated: 2026-08-09
 estimatedReadingTime: '8 minutes'
 tags:
   - plugins
@@ -34,6 +34,7 @@ A plugin bundles one or more of the following components:
 | **MCP Servers** | Model Context Protocol integrations for external tools | `.mcp.json` or `.github/mcp.json` |
 | **LSP Servers** | Language Server Protocol integrations | `lsp.json` or `.github/lsp.json` |
 | **Extensions** | IDE extensions installable via the plugin marketplace (v1.0.62+) | `extensions/` |
+| **Canvas Extensions** | Interactive canvas surfaces for the GitHub Copilot app (v1.0.79+) | `com.github.copilot/extensions/` |
 
 A plugin might include all of these or just one — for example, a plugin could provide a single specialized agent, or an entire development toolkit with multiple agents, skills, hooks, and MCP server configurations working together.
 
@@ -203,6 +204,34 @@ Or from an interactive session:
 ### From VS Code
 
 Browse to the plugin via `@agentPlugins` in the Extensions search view or via **Chat: Plugins** in the Command Palette, then click **Install**.
+
+## Managing Plugin Components
+
+Once installed, individual components within a plugin can be toggled on and off without uninstalling the plugin. Use `/plugins` inside an interactive session to open the plugin management panel:
+
+```
+/plugins
+```
+
+From there you can **enable** or **disable** individual plugins, agents, instructions, skills, LSP servers, and hooks. This is useful when:
+
+- You want to temporarily disable a hook that's slowing down a session
+- You need to test behavior with a specific agent disabled
+- A plugin bundles several agents but you only want one active
+
+From the CLI, you can also use the `update` and `uninstall` verbs directly:
+
+```bash
+# Update a specific plugin
+copilot plugins update my-plugin
+
+# Uninstall a plugin
+copilot plugins uninstall my-plugin
+```
+
+### First-Party Plugin Auto-Updates
+
+*(v1.0.78+)* First-party plugins (those published by GitHub to official marketplaces) automatically update to the latest version when you start a Copilot session — no manual `update` command needed. Third-party and community plugins still require a manual `copilot plugin update` command to pull in new versions.
 
 ## Managing Plugins
 

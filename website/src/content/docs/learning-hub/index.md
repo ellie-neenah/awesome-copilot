@@ -16,6 +16,8 @@ New to GitHub Copilot? Start here to understand the tools available to you.
 
 **Terminal**: Looking for a guided path into GitHub Copilot from the terminal? Explore the [Copilot CLI for Beginners](cli-for-beginners/) with a text-based experience or the [YouTube video series](https://www.youtube.com/watch?v=BDxRhhs36ns&list=PL0lo9MOBetEHvO-spzKBAITkkTqv4RvNl).
 
+**Multiple Sessions**: Run parallel work with [Managing Multiple Copilot Sessions](managing-multiple-sessions/) — covering the Sessions sidebar, `/new-worktree`, and concurrent agent workflows.
+
 ## Fundamentals
 
 Essential concepts to tailor GitHub Copilot beyond its default experience. Start with

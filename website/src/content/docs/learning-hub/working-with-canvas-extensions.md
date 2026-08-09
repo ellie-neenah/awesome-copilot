@@ -3,7 +3,7 @@ title: 'Working with Canvas Extensions'
 description: 'Create and iterate on GitHub Copilot app canvases using /create-canvas, then shape them into reusable project or personal extensions.'
 authors:
   - GitHub Copilot Learning Hub Team
-lastUpdated: 2026-06-17
+lastUpdated: 2026-08-09
 estimatedReadingTime: '8 minutes'
 tags:
   - copilot-app
@@ -121,6 +121,27 @@ Use these extension folders as concrete references:
 - [`Agent Arcade`](../../extensions/#agent-arcade-canvas): retro arcade canvas with agent-callable controls for choosing or restarting mini-games while agents work.
 
 These examples show different complexity levels, from focused workflow boards to richer UI + automation integrations.
+
+## Shipping Canvas Extensions via Plugins
+
+*(v1.0.79+)* Canvas extensions can now be bundled inside a plugin and distributed through the plugin marketplace. Place your canvas extension under `com.github.copilot/extensions/` inside the plugin directory:
+
+```
+my-plugin/
+├── .github/plugin/plugin.json
+├── agents/
+│   └── my-agent.agent.md
+└── com.github.copilot/
+    └── extensions/
+        └── my-canvas/
+            ├── extension.mjs
+            └── assets/
+                └── preview.png
+```
+
+This lets teams share canvas extensions the same way they share agents and skills — via a single `copilot plugin install` command. When the plugin is installed, the canvas extension becomes available inside the GitHub Copilot app automatically.
+
+See [Installing and Using Plugins](../installing-and-using-plugins/) for details on creating and publishing plugins.
 
 ## Iterating after first creation
 
