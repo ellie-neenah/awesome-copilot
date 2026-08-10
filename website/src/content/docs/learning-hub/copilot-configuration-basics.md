@@ -3,7 +3,7 @@ title: 'Copilot Configuration Basics'
 description: 'Learn how to configure GitHub Copilot at user, workspace, and repository levels to optimize your AI-assisted development experience.'
 authors:
   - GitHub Copilot Learning Hub Team
-lastUpdated: 2026-07-13
+lastUpdated: 2026-08-10
 estimatedReadingTime: '10 minutes'
 tags:
   - configuration
@@ -429,6 +429,8 @@ CLI settings use **camelCase** naming. Key settings added in recent releases:
 | `proxy` | HTTP(S) proxy URL for all outbound CLI requests (e.g., `http://proxy.example.com:8080`) (v1.0.64+) |
 | `sessionLimits` | Restrict credit or turn usage for a session; limits apply across the current conversation and reset on `/clear` (v1.0.66+) |
 | `stayInAutopilot` | Keep the CLI in autopilot mode after an autopilot task completes, instead of returning to interactive mode (v1.0.69+) |
+| `worktreeBaseRef` | Controls whether `/worktree`, `/worktree new`, and `--worktree` start from `HEAD` or the remote default branch. Defaults to `HEAD` (v1.0.79+) |
+| `pinnedPrompts` | Show a pinned copy of the current prompt in the UI. Off by default; set to `true` to enable (v1.0.79+) |
 
 > **Note**: Older snake_case names (e.g., `include_gitignored`, `auto_updates_channel`) are still accepted for backward compatibility, but camelCase is now the preferred format.
 
@@ -469,6 +471,8 @@ The settings dialog supports search — type to filter settings by name. Changes
 ```
 
 These flags mirror the **Repo** and **Repo (local)** scope tabs available in the `/settings` dashboard (v1.0.71+), making it easier to manage per-repository vs. user-global configuration without ambiguity. In v1.0.71+, the `/settings` dashboard also shows **Repo** and **Repo (local)** tabs alongside the existing user-level view, giving you a unified place to see which settings are applied at each layer.
+
+> **Session-scoped model (v1.0.79+)**: `/model` is now **session-scoped by default** — switching models in one session no longer affects other sessions or your saved defaults. To set a persistent model default for future sessions, use `/config model` instead of `/model`.
 
 GitHub Copilot CLI has two commands for managing session state, with distinct behaviours:
 
@@ -555,7 +559,14 @@ In v1.0.66+, you can pass a task description to `/worktree` to name the branch f
 
 This creates a branch named from your task description and begins working on it immediately, making it easy to spin up parallel work without stopping to think of a branch name.
 
-After the command runs, the session is inside the new worktree. Use this when you want to work on a second task in parallel without stashing changes or opening a new terminal. In v1.0.64+ you can also use the experimental `--worktree` flag at startup (`copilot -w [name]`) to create or reuse a worktree under `<repo>.worktrees/` before the session begins.
+In v1.0.79+, use `/worktree new` to start a **new session** in a new worktree — the current session stays open while the new one begins in a fresh worktree:
+
+```
+/worktree new
+/worktree new my-feature-branch
+```
+
+After the command runs, the session is inside the new worktree. Use this when you want to work on a second task in parallel without stashing changes or opening a new terminal. In v1.0.64+ you can also use the experimental `--worktree` flag at startup (`copilot -w [name]`) to create or reuse a worktree under `<repo>.worktrees/` before the session begins. The `worktreeBaseRef` setting (v1.0.79+) controls whether worktrees start from `HEAD` or the remote default branch — all worktree commands default to `HEAD`.
 
 The `/every` command (also available as `/loop` since v1.0.64) schedules a recurring prompt to run automatically at a specified interval. The companion `/after` command runs a prompt once after a specified delay. Both are useful for self-paced automation — polling for results, periodically summarizing progress, or triggering other slash commands on a timer:
 
@@ -626,6 +637,8 @@ The `/diagnose` command (v1.0.64+) analyzes the current session's logs and surfa
 Use `/diagnose` when a session is behaving unexpectedly — it inspects session logs and reports what it finds, making it easier to share diagnostics with support or understand what happened internally.
 
 **Keyboard shortcuts for queuing messages**: Use **Ctrl+Q** or **Ctrl+Enter** to queue a message (send it while the agent is still working). **Ctrl+D** no longer queues messages — it now has its default terminal behavior. If you have muscle memory for Ctrl+D queuing, switch to Ctrl+Q.
+
+**Prompt and command queuing** *(v1.0.79+)*: In local sessions you can queue prompts, shell commands, and supported slash commands to run **in order** after the current task finishes. Queue entries accumulate while the agent is busy and are dispatched one-by-one as each task completes — useful for setting up a pipeline of work without interrupting an in-progress task.
 
 **Background running tasks**: Press **Ctrl+X → B** to move the current running task or shell command to the background. The task continues executing while you can type a new message or review earlier output. This is useful for long-running commands where you want to interact with the agent while waiting for the result.
 
@@ -744,6 +757,12 @@ copilot --plan          # start in plan mode (propose without executing)
 
 This is useful in scripts or CI pipelines where you want the CLI to immediately begin working in a specific mode without an interactive prompt.
 
+*(v1.0.79+)* You can combine `--plan` with `--mode autopilot` to have Copilot plan first and then implement without pausing for approval:
+
+```bash
+copilot --plan --mode autopilot "Refactor the auth module"
+```
+
 The `--max-autopilot-continues` flag controls how many times Copilot can automatically continue in autopilot mode before pausing for confirmation. The default is 5:
 
 ```bash
@@ -760,6 +779,8 @@ copilot --no-sandbox -p "Set up development environment with system tools"
 ```
 
 These flags apply only to the current invocation — your persisted sandbox preference remains unchanged.
+
+> **BREAKING (v1.0.79+)**: The sandbox setting `allowDevToolCaches` has been **renamed to `allowDevToolAccess`** — it now grants dev-tool config and registries as well as caches. The old key is silently ignored, so an existing `false` opt-out reverts to the default (enabled). Rename it in your `settings.json` and any managed or MDM policy files.
 
 The `--attachment` flag (available in prompt mode, `-p`) lets you attach files — images or native documents — to the initial prompt in non-interactive mode:
 
