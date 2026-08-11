@@ -3,7 +3,7 @@ title: 'Getting Started with the GitHub Copilot app'
 description: 'Learn about the GitHub Copilot app, a desktop experience built for agent-native development. Understand its key features and who it''s for.'
 authors:
   - GitHub Copilot Learning Hub Team
-lastUpdated: 2026-06-17
+lastUpdated: 2026-08-11
 estimatedReadingTime: '8 minutes'
 tags:
   - copilot-app
@@ -50,6 +50,17 @@ The central hub of the Copilot app is the **My Work** view. This dashboard shows
 
 Instead of checking GitHub, your CLI, and VS Code for updates, everything is in one place.
 
+### Sessions Tab
+
+The **Sessions tab** lets you manage multiple concurrent sessions without leaving the app. From this tab you can:
+
+- See all running and recent sessions at a glance in the sidebar
+- Switch between sessions instantly
+- Start new sessions in parallel while others are still running
+- Inspect each session's status, timeline, and output independently
+
+This is especially useful when you're directing several agents on different tasks simultaneously — the Sessions tab is the control center for that workflow.
+
 ### Automations
 
 The Copilot app includes built-in automations that can run scheduled tasks for you using the same agentic technology. You can use templates out of the box or create your own.
@@ -66,6 +77,16 @@ Each session the Copilot app creates runs in its own **git worktree**—a real, 
 - You can pick up a session from any device, on any worktree
 
 This makes it easy to dispatch multiple agents and trust they won't interfere with each other.
+
+#### Starting a new session in a new worktree from the CLI
+
+Use `/worktree new` in the CLI to spin up a fresh session in its own isolated worktree without leaving your current session:
+
+```
+/worktree new
+```
+
+By default, the new worktree starts from HEAD. You can control this behavior with the `worktreeBaseRef` setting in your user config — set it to `"remoteDefault"` to branch from the remote default branch instead. Note that `/worktree`, `/worktree new`, and `--worktree` all now default to HEAD (previously `--worktree` started from the remote default branch).
 
 ### Canvases
 
@@ -145,6 +166,16 @@ Once installed, you can create a session by:
 3. **From your inbox**: The app syncs your GitHub inbox—click an issue and start a session for it
 
 Each session runs in its own worktree with its own isolated environment. You can run multiple sessions in parallel.
+
+### Opening the App from the CLI
+
+If you're already in a Copilot CLI session and want to open it in the GitHub Copilot desktop app, use the `/app` command:
+
+```
+/app
+```
+
+This opens your current CLI session directly in the app (requires GitHub Copilot app 1.1.3 or later), so you can switch from a terminal workflow to the visual interface without losing your context.
 
 ### Launching Sessions from the Terminal with Deep Links
 
