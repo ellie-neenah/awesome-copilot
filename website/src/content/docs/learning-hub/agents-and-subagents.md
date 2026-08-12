@@ -3,7 +3,7 @@ title: 'Agents and Subagents'
 description: 'Learn how delegated subagents differ from primary agents, when to use them, and how to launch them in VS Code and Copilot CLI.'
 authors:
   - GitHub Copilot Learning Hub Team
-lastUpdated: 2026-07-01
+lastUpdated: 2026-08-12
 estimatedReadingTime: '9 minutes'
 tags:
   - agents
@@ -124,6 +124,14 @@ copilot -p "/fleet Update the auth docs, refactor the auth service, and add rela
 ```
 
 > **Prompt mode and repo hooks (v1.0.40+)**: When using `copilot -p "..."` (prompt mode), repository hooks are disabled by default for security. If your `/fleet` workflow relies on hooks (e.g., auto-formatting or lint checks after edits), opt in by setting `GITHUB_COPILOT_PROMPT_MODE_REPO_HOOKS=true` before running. See [Automating with Hooks](../automating-with-hooks/) for details.
+
+**Combining planning and execution** (v1.0.79+): Pass `--plan` together with `--mode autopilot` to plan first and then implement automatically without waiting for approval:
+
+```bash
+copilot --plan --mode autopilot "Refactor the auth module"
+```
+
+This is a powerful combination for fully automated tasks in CI pipelines or batch workflows: Copilot generates a plan and immediately executes it in autopilot mode — no intermediate confirmation step required.
 
 The important behavior is different from a single chat turn:
 
