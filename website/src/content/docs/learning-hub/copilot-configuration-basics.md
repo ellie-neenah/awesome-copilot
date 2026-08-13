@@ -3,7 +3,7 @@ title: 'Copilot Configuration Basics'
 description: 'Learn how to configure GitHub Copilot at user, workspace, and repository levels to optimize your AI-assisted development experience.'
 authors:
   - GitHub Copilot Learning Hub Team
-lastUpdated: 2026-07-13
+lastUpdated: 2026-08-13
 estimatedReadingTime: '10 minutes'
 tags:
   - configuration
@@ -470,6 +470,8 @@ The settings dialog supports search — type to filter settings by name. Changes
 
 These flags mirror the **Repo** and **Repo (local)** scope tabs available in the `/settings` dashboard (v1.0.71+), making it easier to manage per-repository vs. user-global configuration without ambiguity. In v1.0.71+, the `/settings` dashboard also shows **Repo** and **Repo (local)** tabs alongside the existing user-level view, giving you a unified place to see which settings are applied at each layer.
 
+> **Session-scoped model selection (v1.0.79+)**: `/model` is now **session-scoped by default** — selecting a model only applies to the current session and does not persist to future sessions. To set a persistent model default for all future sessions, use `/config model` instead of `/model`. This separates the "try a different model for this task" workflow from the "set my preferred model" workflow.
+
 GitHub Copilot CLI has two commands for managing session state, with distinct behaviours:
 
 | Command | Behaviour |
@@ -556,6 +558,23 @@ In v1.0.66+, you can pass a task description to `/worktree` to name the branch f
 This creates a branch named from your task description and begins working on it immediately, making it easy to spin up parallel work without stopping to think of a branch name.
 
 After the command runs, the session is inside the new worktree. Use this when you want to work on a second task in parallel without stashing changes or opening a new terminal. In v1.0.64+ you can also use the experimental `--worktree` flag at startup (`copilot -w [name]`) to create or reuse a worktree under `<repo>.worktrees/` before the session begins.
+
+*(v1.0.79+)* Use `/worktree new` to **start a fresh session** in a new worktree, instead of moving the current session:
+
+```
+/worktree new                       # new session in a new worktree from HEAD
+/worktree new my-feature-branch     # new session on a specific branch
+```
+
+Unlike `/worktree` (which migrates the current session), `/worktree new` keeps your current session where it is and opens a parallel session in the new worktree — ideal for launching a second agent task without interrupting your current work.
+
+The `worktreeBaseRef` setting *(v1.0.79+)* controls whether `/worktree`, `/worktree new`, and `--worktree` start from HEAD (the default) or the remote default branch:
+
+```json
+{
+  "worktreeBaseRef": "HEAD"       // default — start from current HEAD
+}
+```
 
 The `/every` command (also available as `/loop` since v1.0.64) schedules a recurring prompt to run automatically at a specified interval. The companion `/after` command runs a prompt once after a specified delay. Both are useful for self-paced automation — polling for results, periodically summarizing progress, or triggering other slash commands on a timer:
 
@@ -703,6 +722,14 @@ The `/allow-all` command (also accessible as `/yolo`) enables autopilot mode, wh
 
 > **ACP clients (v1.0.39+)**: ACP clients can also toggle allow-all mode programmatically via session configuration, without issuing a slash command. This is useful for automated pipelines that drive Copilot CLI through the ACP protocol.
 
+The `/permissions` command *(v1.0.78+)* is a focused way to switch between approval modes mid-session:
+
+```
+/permissions      # open the permissions mode picker
+```
+
+Use `/permissions` when you want to quickly switch from interactive review to autopilot (or back) without remembering the full `/allow-all` syntax. It surfaces the same approval modes — including the auto allow-all LLM-judge mode — in a convenient dialog.
+
 The `/autopilot` command (v1.0.45+) is a quick in-session toggle that switches between **interactive mode** (where the agent pauses to ask for confirmation before tool use) and **autopilot mode** (where it runs autonomously). Unlike `/allow-all` which specifically controls whether tool permissions are required, `/autopilot` toggles the overall agent mode:
 
 ```
@@ -743,6 +770,14 @@ copilot --plan          # start in plan mode (propose without executing)
 ```
 
 This is useful in scripts or CI pipelines where you want the CLI to immediately begin working in a specific mode without an interactive prompt.
+
+*(v1.0.79+)* Combine `--plan` with `--mode autopilot` to **plan first, then implement** without waiting for intermediate approval. The agent proposes the full plan, and if accepted, immediately proceeds to implement it end-to-end:
+
+```bash
+copilot --plan --mode autopilot "Add rate limiting to the /api/login endpoint"
+```
+
+This is useful for well-defined tasks where you want to review the plan but then let the agent execute autonomously — a middle ground between purely supervised and fully hands-off operation.
 
 The `--max-autopilot-continues` flag controls how many times Copilot can automatically continue in autopilot mode before pausing for confirmation. The default is 5:
 
