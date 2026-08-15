@@ -3,7 +3,7 @@ title: 'GitHub Copilot Terminology Glossary'
 description: 'A quick reference guide defining common GitHub Copilot and platform-specific terms.'
 authors:
   - GitHub Copilot Learning Hub Team
-lastUpdated: 2026-04-02
+lastUpdated: 2026-08-15
 estimatedReadingTime: '8 minutes'
 tags:
   - glossary
@@ -262,6 +262,43 @@ tools: ['codebase', 'terminalCommand', 'github']
 ```
 
 **Related terms**: [MCP](#mcp-model-context-protocol), [Built-in Tool](#built-in-tool), [Agent](#agent)
+
+---
+
+### Sandbox
+
+A security isolation layer that restricts what commands and file-system paths can be accessed during a Copilot CLI agent session. The sandbox prevents accidental or malicious changes by enforcing read-only rules on certain paths, controlling network access, and optionally requiring explicit approval before running blocked commands.
+
+Key sandbox commands:
+- `/sandbox` — view and configure current sandbox settings
+- `/sandbox policy` — show effective sandbox paths, denials, and network access
+
+The sandbox is on by default. Enterprise administrators can enforce a floor policy via MDM/managed settings that tightens (but never loosens) the user's local configuration.
+
+**Learn more**: [Copilot Configuration Basics](../copilot-configuration-basics/)
+
+---
+
+### Worktree
+
+A separate working directory created from the same Git repository, used to work on multiple tasks or branches in parallel without stashing changes or opening a new terminal. In GitHub Copilot CLI, the `/worktree` command creates a new git worktree and switches into it, moving any uncommitted changes along.
+
+```
+/worktree my-feature-branch    # create and switch to a new worktree
+/worktree new                  # start a new session in a new worktree (v1.0.79+)
+```
+
+Use worktrees when you want to work on two tasks simultaneously — for example, fixing a bug on one branch while implementing a feature on another, each in its own Copilot session.
+
+**Learn more**: [Copilot Configuration Basics](../copilot-configuration-basics/)
+
+---
+
+### Queue
+
+*(v1.0.78+)* A list of prompts, shell commands, and supported slash commands that are scheduled to run in order after the current task finishes. You can add items to the queue while the agent is working, then manage them with the **queue manager** to reorder, edit, remove, or immediately send queued messages.
+
+Queuing is useful for batch-processing a set of related instructions without waiting for each one to complete before typing the next.
 
 ---
 

@@ -3,7 +3,7 @@ title: 'Copilot Configuration Basics'
 description: 'Learn how to configure GitHub Copilot at user, workspace, and repository levels to optimize your AI-assisted development experience.'
 authors:
   - GitHub Copilot Learning Hub Team
-lastUpdated: 2026-07-13
+lastUpdated: 2026-08-15
 estimatedReadingTime: '10 minutes'
 tags:
   - configuration
@@ -445,9 +445,27 @@ These files follow the same format as `config.json` and are loaded after the glo
 
 The model picker opens in a **full-screen view** with inline reasoning effort adjustment. Use the **← / →** arrow keys to change the reasoning effort level (`low`, `medium`, `high`) directly from the picker without leaving the session. The current reasoning effort level is also displayed in the model header (e.g., `claude-sonnet-4.6 (high)`) so you always know which level is active.
 
+*(v1.0.79+)* The model picker groups models into **Recent**, **Recommended**, **New**, and other sections. Use **Shift+Tab** to switch between grouping views.
+
 **Auto mode and server-side model routing** (v1.0.43+): When you select **Auto** as your model, the CLI uses server-side model routing for real-time model selection. Instead of locking in a single model at session start, Auto mode evaluates each request and routes it to the most appropriate model dynamically. This means straightforward questions can be handled by a faster model while complex reasoning tasks are automatically escalated — without you needing to switch models manually.
 
 **Model family aliases** (v1.0.64+): Instead of typing a full model name, you can use short family aliases in the model setting: `opus`, `sonnet`, `haiku` (Anthropic), and `gpt`, `gemini` (Google/OpenAI). The CLI resolves the alias to the latest available model in that family. This is especially useful in scripts or configuration files where you want to track the best model in a family without hardcoding a version string.
+
+**Session-scoped model selection** (v1.0.79+): `/model` is now **session-scoped by default** — changing the model with `/model` affects only the current session and doesn't persist to future sessions. To set a persistent default model for all future sessions, use `/config model`:
+
+```
+/model claude-sonnet-4.6        # set the model for this session only
+/config model claude-sonnet-4.6 # set the default model for all future sessions
+/model plan claude-sonnet-4.6   # set a model used only while in plan mode (v1.0.74+)
+```
+
+Pass `off` to `/model plan` to clear the plan-mode model override, or omit the model ID to open the picker.
+
+**Plan + autopilot** (v1.0.79+): Combine `--plan` with `--mode autopilot` to have the CLI plan first and then implement without waiting for approval:
+
+```bash
+copilot --plan --mode autopilot
+```
 
 ### CLI Session Commands
 
@@ -478,6 +496,16 @@ GitHub Copilot CLI has two commands for managing session state, with distinct be
 | `/clear [prompt]` | Abandons the current session entirely and starts a new one. Backgrounded sessions are not affected. MCP servers configured in your project are preserved in the new session. |
 
 Both commands accept an optional prompt argument to seed the new session with an opening message, for example `/new Add error handling to the login flow`.
+
+### Managing Multiple Concurrent Sessions
+
+*(v1.0.79+)* The **Sessions sidebar** lets you manage multiple concurrent sessions without leaving your current terminal. Switch between sessions, spawn new ones, and see their status at a glance — all in the split-view sidebar.
+
+```
+/sessions        # open the sessions sidebar
+```
+
+When you switch between sessions, MCP servers are no longer restarted, so turns running in another session are never halted with a stale-hook error. Use the Sessions sidebar when you want to run parallel workstreams — for example, one session implementing a feature while another works on tests.
 
 The `/session rename` command renames the current session. When called **without a name argument**, it automatically generates a session name based on the conversation history:
 
@@ -512,6 +540,8 @@ The `/rewind` command opens a timeline picker that lets you roll back the conver
 ```
 /rewind
 ```
+
+*(v1.0.78+)* `/rewind` no longer requires git. It restores only the files that Copilot changed, skipping any file whose contents no longer match what Copilot last wrote. When rewinding, you can choose between reverting the conversation only, or the conversation plus files.
 
 Use `/rewind` when you want to branch off from a different point in the conversation, rather than just undoing the most recent turn.
 
@@ -710,6 +740,14 @@ The `/autopilot` command (v1.0.45+) is a quick in-session toggle that switches b
 ```
 
 Use `/autopilot` when you want to flip between supervised and unsupervised operation mid-session without typing out the full `/allow-all on` or `/allow-all off` commands.
+
+*(v1.0.78+)* The `/permissions` command provides a unified way to switch between approval modes without needing to remember separate commands:
+
+```
+/permissions      # open the permissions dialog
+```
+
+Use `/permissions` to quickly switch between interactive (confirm each action), autopilot (run all tools without confirmation), and auto (AI-judged approvals) modes.
 
 > **Enhanced autopilot (v1.0.64+)**: When autopilot mode is active — including when launched with `--autopilot` at startup or during automatic continuation turns — the agent automatically handles elicitation dialogs, `ask_user` prompts, sampling requests, and permission prompts without surfacing them as interactive dialogs. This means long-running automated sessions can proceed end-to-end without manual confirmation steps.
 

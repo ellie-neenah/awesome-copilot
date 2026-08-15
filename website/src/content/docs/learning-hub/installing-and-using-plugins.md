@@ -3,7 +3,7 @@ title: 'Installing and Using Plugins'
 description: 'Learn how to find, install, and manage plugins that extend GitHub Copilot CLI with reusable agents, skills, hooks, and integrations.'
 authors:
   - GitHub Copilot Learning Hub Team
-lastUpdated: 2026-07-13
+lastUpdated: 2026-08-15
 estimatedReadingTime: '8 minutes'
 tags:
   - plugins
@@ -160,6 +160,20 @@ To automatically register an additional marketplace for everyone working in a re
 
 With this in place, team members automatically get the `my-org-plugins` marketplace available without running a separate `marketplace add` command. This replaces the older `marketplaces` setting, which was removed in v1.0.16.
 
+*(v1.0.79+)* To have plugins from an additional marketplace automatically update at session start, add `"autoUpdate": true` to the marketplace entry:
+
+```json
+{
+  "extraKnownMarketplaces": [
+    {
+      "name": "my-org-plugins",
+      "source": "my-org/internal-plugins",
+      "autoUpdate": true
+    }
+  ]
+}
+```
+
 ### Pinning a Marketplace to a Specific Commit
 
 *(v1.0.70+)* To ensure reproducibility and prevent unintended updates, you can pin a marketplace to an exact commit SHA using the `sha` field in the source configuration:
@@ -221,6 +235,22 @@ copilot plugin marketplace update
 # Remove a plugin
 copilot plugin uninstall my-plugin
 ```
+
+### Auto-updating First-party Plugins
+
+*(v1.0.78+)* First-party plugins (those from the `copilot-plugins` official marketplace) automatically update to the latest version at session start. You don't need to run `copilot plugin update` manually for these plugins.
+
+### Enabling and Disabling Plugin Components
+
+*(v1.0.76+)* You can enable or disable individual plugins, instructions, agents, LSP servers, and hooks within `/plugins` without uninstalling them:
+
+```
+/plugins                         # open the plugin management dialog
+/plugins disable my-plugin       # disable a plugin (keeps it installed)
+/plugins enable my-plugin        # re-enable a disabled plugin
+```
+
+This is useful when you want to temporarily turn off a plugin's components without losing your installation.
 
 ### Loading Plugins from a Local Directory
 
