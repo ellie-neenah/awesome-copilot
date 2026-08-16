@@ -3,7 +3,7 @@ title: 'Understanding MCP Servers'
 description: 'Learn how Model Context Protocol servers extend GitHub Copilot with access to external tools, databases, and APIs.'
 authors:
   - GitHub Copilot Learning Hub Team
-lastUpdated: 2026-07-13
+lastUpdated: 2026-08-16
 estimatedReadingTime: '8 minutes'
 tags:
   - mcp
@@ -316,6 +316,14 @@ For example, a PostgreSQL server that can't connect because `DATABASE_URL` is no
 You can also open the `/mcp` manager while the agent is working to toggle servers on or off mid-turn. Add, edit, delete, and re-auth actions wait until the turn finishes, but enabling or disabling a server takes effect immediately.
 
 **Toggling servers on and off** (v1.0.66+): From the `/mcp` list view, you can **enable or disable individual MCP servers** without editing your config file. Select a server in the list and toggle it — disabled servers won't start in future sessions and their tools won't be available to agents. This is useful for temporarily disabling a server that's causing slowdowns or errors without removing it from your configuration entirely.
+
+*(v1.0.80+)* Use the `--enable-mcp-server` startup flag to **re-enable a specific server** that is disabled in your settings for the current run only — without permanently changing your saved preferences:
+
+```bash
+copilot --enable-mcp-server my-database-server "Query the production schema"
+```
+
+This is useful in pipelines or one-off sessions where you need access to a normally-disabled server without altering your configuration file.
 
 **Common causes and fixes**:
 

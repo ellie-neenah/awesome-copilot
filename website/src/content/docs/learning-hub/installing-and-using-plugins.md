@@ -3,7 +3,7 @@ title: 'Installing and Using Plugins'
 description: 'Learn how to find, install, and manage plugins that extend GitHub Copilot CLI with reusable agents, skills, hooks, and integrations.'
 authors:
   - GitHub Copilot Learning Hub Team
-lastUpdated: 2026-07-13
+lastUpdated: 2026-08-16
 estimatedReadingTime: '8 minutes'
 tags:
   - plugins
@@ -46,16 +46,20 @@ my-plugin/
 ├── .github/
 │   └── plugin/
 │       └── plugin.json        # Plugin manifest (name, description, version)
-├── agents/
-│   ├── api-architect.agent.md
-│   └── test-specialist.agent.md
-├── skills/
-│   └── database-migrations/
-│       ├── SKILL.md
-│       └── scripts/migrate.sh
-├── hooks.json
+├── com.github.copilot/        # Required namespace for Agent Plugins spec (v1.0.79+)
+│   ├── agents/
+│   │   ├── api-architect.agent.md
+│   │   └── test-specialist.agent.md
+│   ├── skills/
+│   │   └── database-migrations/
+│   │       ├── SKILL.md
+│   │       └── scripts/migrate.sh
+│   └── hooks/
+│       └── hooks.json
 └── README.md
 ```
+
+> **Breaking change (v1.0.79+)**: Agent Plugins spec plugins now load `commands/`, `agents/`, `rules/`, `hooks/hooks.json`, `lsp.json`, and `extensions/` **only from the `com.github.copilot/` subdirectory**. Components placed at the plugin root are no longer loaded and will be silently ignored. If you maintain a plugin that uses the old layout, migrate your files into `com.github.copilot/` before updating your users to CLI v1.0.79 or later.
 
 The `plugin.json` manifest declares what the plugin contains:
 

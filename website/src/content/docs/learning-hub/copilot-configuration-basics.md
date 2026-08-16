@@ -3,7 +3,7 @@ title: 'Copilot Configuration Basics'
 description: 'Learn how to configure GitHub Copilot at user, workspace, and repository levels to optimize your AI-assisted development experience.'
 authors:
   - GitHub Copilot Learning Hub Team
-lastUpdated: 2026-07-13
+lastUpdated: 2026-08-16
 estimatedReadingTime: '10 minutes'
 tags:
   - configuration
@@ -470,6 +470,16 @@ The settings dialog supports search — type to filter settings by name. Changes
 
 These flags mirror the **Repo** and **Repo (local)** scope tabs available in the `/settings` dashboard (v1.0.71+), making it easier to manage per-repository vs. user-global configuration without ambiguity. In v1.0.71+, the `/settings` dashboard also shows **Repo** and **Repo (local)** tabs alongside the existing user-level view, giving you a unified place to see which settings are applied at each layer.
 
+*(v1.0.79+)* The `/model` command is now **session-scoped by default** — selecting a model applies only to the current session and doesn't persist. Use `/config model` to set the default model for all future sessions:
+
+```
+/config model                 # open model picker and save selection as the default
+/config model claude-sonnet   # set a specific model as the default
+/model                        # pick a model for this session only (no persistence)
+```
+
+This separation makes it easy to experiment with different models in a session without accidentally overriding your preferred default.
+
 GitHub Copilot CLI has two commands for managing session state, with distinct behaviours:
 
 | Command | Behaviour |
@@ -556,6 +566,21 @@ In v1.0.66+, you can pass a task description to `/worktree` to name the branch f
 This creates a branch named from your task description and begins working on it immediately, making it easy to spin up parallel work without stopping to think of a branch name.
 
 After the command runs, the session is inside the new worktree. Use this when you want to work on a second task in parallel without stashing changes or opening a new terminal. In v1.0.64+ you can also use the experimental `--worktree` flag at startup (`copilot -w [name]`) to create or reuse a worktree under `<repo>.worktrees/` before the session begins.
+
+*(v1.0.79+)* Use `/worktree new` to **start a fresh session in a new worktree** — rather than moving the current session, this opens a parallel session on a new branch while leaving your current work untouched:
+
+```
+/worktree new                        # create a new worktree and open a new session in it
+/worktree new my-feature-branch      # use a specific branch name
+```
+
+The `worktreeBaseRef` setting controls whether `/worktree`, `/worktree new`, and `--worktree` base the new branch on `HEAD` (the default) or on the remote default branch. Set it in your config if you always want to branch from the latest remote:
+
+```json
+{
+  "worktreeBaseRef": "origin/main"
+}
+```
 
 The `/every` command (also available as `/loop` since v1.0.64) schedules a recurring prompt to run automatically at a specified interval. The companion `/after` command runs a prompt once after a specified delay. Both are useful for self-paced automation — polling for results, periodically summarizing progress, or triggering other slash commands on a timer:
 
@@ -706,7 +731,21 @@ The `/allow-all` command (also accessible as `/yolo`) enables autopilot mode, wh
 The `/autopilot` command (v1.0.45+) is a quick in-session toggle that switches between **interactive mode** (where the agent pauses to ask for confirmation before tool use) and **autopilot mode** (where it runs autonomously). Unlike `/allow-all` which specifically controls whether tool permissions are required, `/autopilot` toggles the overall agent mode:
 
 ```
-/autopilot        # toggle between interactive and autopilot modes
+/autopilot              # toggle between interactive and autopilot modes
+/autopilot <objective>  # set an explicit goal and run autonomously until done (v1.0.79+)
+```
+
+*(v1.0.79+)* Passing an objective directly to `/autopilot` sets an explicit goal and runs the agent autonomously until the objective is met — no experimental mode required:
+
+```
+/autopilot refactor the authentication module to use JWT tokens
+/autopilot add unit tests for all functions in src/utils/
+```
+
+You can also combine `--plan` with `--mode autopilot` at startup to have the CLI first produce a plan, then implement it autonomously without waiting for your approval:
+
+```bash
+copilot --plan --mode autopilot "Add rate limiting to the login endpoint"
 ```
 
 Use `/autopilot` when you want to flip between supervised and unsupervised operation mid-session without typing out the full `/allow-all on` or `/allow-all off` commands.
@@ -783,6 +822,36 @@ copilot --config-dir ~/.my-copilot-config
 ```
 
 Set `COPILOT_HOME` in your shell profile to use a custom config directory across all sessions. This is especially useful when running multiple Copilot configurations for different projects or teams.
+
+### Agent Host Protocol (AHP) — Multi-Terminal Session Sharing
+
+*(v1.0.79+)* The **Agent Host Protocol (AHP)** lets multiple terminal windows share a single Copilot session running on a host daemon. You can observe the agent's output from several terminals simultaneously, type into any of them, and hand off work between machines — all connected to the same live session.
+
+```bash
+copilot --ahp          # attach to an AHP host (starts a local one if none is running)
+```
+
+Inside a session, the `/ahp` family of commands manages the protocol:
+
+```
+/ahp status                  # show host identity, health, and connection info
+/ahp sessions                # list all sessions on the host
+/ahp new                     # create a new session on the host
+/ahp start [port]            # start an AHP daemon serving the current directory
+/ahp stop <host>             # stop a daemon
+/ahp restart <host>          # restart a daemon
+/ahp connect <url>           # add a host while the CLI is running
+/ahp hosts                   # list connected hosts
+/ahp use <host>              # switch between hosts
+/ahp cloud <environment-id>  # put a Mission Control environment in the Sessions tab
+/ahp codespace <name>        # forward a Codespace's copilotd port and add to Sessions tab
+```
+
+The **Sessions tab** shows all sessions from each connected host, with their current status (running, waiting, idle). Busy sessions sort to the top. Press `h` in the Sessions tab to switch between your local sessions and any connected AHP hosts.
+
+**Auto-discovery** is on by default: if you start the CLI with `--ahp`, it automatically finds AHP daemons already running on your machine and adds them to the Sessions tab. Disable it by setting `COPILOT_AHP_DISCOVER=0`.
+
+> **Note**: AHP is currently gated on the `AHP_CLIENT` feature flag. The `--ahp` flag and `/ahp` commands are only available when this flag is enabled for your account.
 
 ### Shell Completion
 
