@@ -3,7 +3,7 @@ title: 'Copilot Configuration Basics'
 description: 'Learn how to configure GitHub Copilot at user, workspace, and repository levels to optimize your AI-assisted development experience.'
 authors:
   - GitHub Copilot Learning Hub Team
-lastUpdated: 2026-07-13
+lastUpdated: 2026-08-17
 estimatedReadingTime: '10 minutes'
 tags:
   - configuration
@@ -449,6 +449,17 @@ The model picker opens in a **full-screen view** with inline reasoning effort ad
 
 **Model family aliases** (v1.0.64+): Instead of typing a full model name, you can use short family aliases in the model setting: `opus`, `sonnet`, `haiku` (Anthropic), and `gpt`, `gemini` (Google/OpenAI). The CLI resolves the alias to the latest available model in that family. This is especially useful in scripts or configuration files where you want to track the best model in a family without hardcoding a version string.
 
+**Model picker grouping** (v1.0.79+): The model picker now organizes models into labeled sections — **Recent**, **Recommended**, **New**, and other groups — making it easier to find the right model at a glance. Use **Shift+Tab** to switch between grouping views.
+
+**Session-scoped model selection** (v1.0.79+): `/model` is now session-scoped by default — changing the model affects only the current session without altering your persistent settings. To set a default model for all future sessions, use `/config model` instead:
+
+```
+/model gpt-4o          # change model for this session only
+/config model gpt-4o   # set default model for all future sessions
+```
+
+This makes it safe to experiment with different models mid-session without accidentally changing your global default.
+
 ### CLI Session Commands
 
 The `/settings` command (v1.0.61+) opens an interactive dialog to browse and edit all user settings in one place. Use it to discover available settings, toggle options, and update values without manually editing your config file:
@@ -556,6 +567,14 @@ In v1.0.66+, you can pass a task description to `/worktree` to name the branch f
 This creates a branch named from your task description and begins working on it immediately, making it easy to spin up parallel work without stopping to think of a branch name.
 
 After the command runs, the session is inside the new worktree. Use this when you want to work on a second task in parallel without stashing changes or opening a new terminal. In v1.0.64+ you can also use the experimental `--worktree` flag at startup (`copilot -w [name]`) to create or reuse a worktree under `<repo>.worktrees/` before the session begins.
+
+**Starting a new session in a new worktree** (v1.0.79+): Use `/worktree new` to start a fresh session in a brand-new worktree without any prompt inheritance from the current session:
+
+```
+/worktree new my-branch-name
+```
+
+The `worktreeBaseRef` setting controls whether `/worktree`, `/worktree new`, and `--worktree` branch from `HEAD` or the remote default branch. All three now default to `HEAD`.
 
 The `/every` command (also available as `/loop` since v1.0.64) schedules a recurring prompt to run automatically at a specified interval. The companion `/after` command runs a prompt once after a specified delay. Both are useful for self-paced automation — polling for results, periodically summarizing progress, or triggering other slash commands on a timer:
 
@@ -743,6 +762,20 @@ copilot --plan          # start in plan mode (propose without executing)
 ```
 
 This is useful in scripts or CI pipelines where you want the CLI to immediately begin working in a specific mode without an interactive prompt.
+
+**Plan-then-implement in one command** (v1.0.79+): Combine `--plan` with `--mode autopilot` to first produce a plan and then automatically implement it — without waiting for manual approval between steps:
+
+```bash
+copilot --plan --mode autopilot "Add rate limiting to the API endpoints"
+```
+
+This is useful for well-scoped tasks where you want an upfront plan for visibility but don't need to review it before execution proceeds.
+
+**Explicit autopilot objectives** (v1.0.79+): Use `/autopilot <objective>` to set a named goal for the current autopilot session. Previously this required experimental features to be enabled; it is now available in standard mode:
+
+```
+/autopilot Implement the new user profile page
+```
 
 The `--max-autopilot-continues` flag controls how many times Copilot can automatically continue in autopilot mode before pausing for confirmation. The default is 5:
 

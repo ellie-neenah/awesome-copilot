@@ -3,7 +3,7 @@ title: 'Installing and Using Plugins'
 description: 'Learn how to find, install, and manage plugins that extend GitHub Copilot CLI with reusable agents, skills, hooks, and integrations.'
 authors:
   - GitHub Copilot Learning Hub Team
-lastUpdated: 2026-07-13
+lastUpdated: 2026-08-17
 estimatedReadingTime: '8 minutes'
 tags:
   - plugins
@@ -28,32 +28,36 @@ A plugin bundles one or more of the following components:
 
 | Component | What It Does | File Location |
 |-----------|-------------|---------------|
-| **Custom Agents** | Specialized AI assistants with tailored expertise | `agents/*.agent.md` |
-| **Skills** | Discrete callable capabilities with bundled resources | `skills/*/SKILL.md` |
-| **Hooks** | Event handlers that intercept agent behavior | `hooks.json` or `hooks/` |
+| **Custom Agents** | Specialized AI assistants with tailored expertise | `com.github.copilot/agents/*.agent.md` |
+| **Skills** | Discrete callable capabilities with bundled resources | `com.github.copilot/skills/*/SKILL.md` |
+| **Hooks** | Event handlers that intercept agent behavior | `com.github.copilot/hooks/hooks.json` |
 | **MCP Servers** | Model Context Protocol integrations for external tools | `.mcp.json` or `.github/mcp.json` |
-| **LSP Servers** | Language Server Protocol integrations | `lsp.json` or `.github/lsp.json` |
-| **Extensions** | IDE extensions installable via the plugin marketplace (v1.0.62+) | `extensions/` |
+| **LSP Servers** | Language Server Protocol integrations | `com.github.copilot/lsp.json` |
+| **Extensions** | IDE extensions installable via the plugin marketplace (v1.0.62+) | `com.github.copilot/extensions/` |
+
+> **Breaking change (v1.0.79+)**: Agent Plugins spec plugins must now place `commands/`, `agents/`, `rules/`, `hooks/hooks.json`, `lsp.json`, and `extensions/` under a `com.github.copilot/` directory. Files at the plugin root are no longer loaded. If your plugin previously shipped these files at the root, move them into `com.github.copilot/`. Plugins that leave components at the root now report which files need to be moved instead of silently ignoring them.
 
 A plugin might include all of these or just one — for example, a plugin could provide a single specialized agent, or an entire development toolkit with multiple agents, skills, hooks, and MCP server configurations working together.
 
 ### Example: What a Plugin Looks Like
 
-Here's the structure of a typical plugin:
+Here's the structure of a typical plugin using the current Agent Plugins spec:
 
 ```
 my-plugin/
 ├── .github/
 │   └── plugin/
 │       └── plugin.json        # Plugin manifest (name, description, version)
-├── agents/
-│   ├── api-architect.agent.md
-│   └── test-specialist.agent.md
-├── skills/
-│   └── database-migrations/
-│       ├── SKILL.md
-│       └── scripts/migrate.sh
-├── hooks.json
+├── com.github.copilot/
+│   ├── agents/
+│   │   ├── api-architect.agent.md
+│   │   └── test-specialist.agent.md
+│   ├── skills/
+│   │   └── database-migrations/
+│   │       ├── SKILL.md
+│   │       └── scripts/migrate.sh
+│   └── hooks/
+│       └── hooks.json
 └── README.md
 ```
 
@@ -217,6 +221,9 @@ copilot plugin update my-plugin
 
 # Refresh all marketplace catalogs (fetch the latest list of available plugins)
 copilot plugin marketplace update
+
+# Refresh a specific marketplace catalog only
+copilot plugin marketplace update awesome-copilot
 
 # Remove a plugin
 copilot plugin uninstall my-plugin
