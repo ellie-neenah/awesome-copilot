@@ -3,7 +3,7 @@ title: 'Using the Copilot Coding Agent'
 description: 'Learn how to use GitHub Copilot coding agent to autonomously work on issues, generate pull requests, and automate development tasks.'
 authors:
   - GitHub Copilot Learning Hub Team
-lastUpdated: 2026-05-13
+lastUpdated: 2026-08-18
 estimatedReadingTime: '12 minutes'
 tags:
   - coding-agent
@@ -376,6 +376,80 @@ Since v1.0.47, `--resume` also surfaces **cloud agent sessions that haven't yet 
 | No PR required | You can steer tasks that haven't yet opened a pull request |
 
 > **Note**: Remote control replaces the earlier "steering" feature. If you see references to steering in older documentation, remote control is the updated equivalent.
+
+## Agent Host Protocol (AHP)
+
+The **Agent Host Protocol** (`--ahp`) lets multiple Copilot CLI terminals attach to the same set of sessions running on a shared host. Where remote control connects you to a single cloud agent task, AHP is a daemon-based approach: one CLI process acts as the host, and any number of other CLIs can connect and collaborate on sessions as if they were all local.
+
+> **Early access**: AHP is currently rolling out under the `AHP_CLIENT` feature flag. The `--ahp` flags and `/ahp` commands are available once the feature is enabled for your account.
+
+### How AHP Works
+
+```
+Host CLI (copilot --ahp)
+        ↓  serves sessions via AHP daemon
+Client CLI A  ──────────┐
+Client CLI B  ──────────┤  attach and watch turns stream live
+Client CLI C  ──────────┘
+```
+
+Each attached terminal can:
+- Watch turns stream in real time (including turns started by another terminal)
+- Steer a running turn (Enter), queue a follow-up (Ctrl+Q), or cancel (Ctrl+C)
+- Create new sessions on the host with `n`
+- List and switch between sessions with the **Sessions** tab
+
+### Starting and Connecting
+
+```bash
+# Start an AHP host in the current directory
+copilot --ahp
+
+# Connect to a specific host URL
+copilot --ahp "ws://localhost:8765"
+
+# Connect to a Codespace's session host
+/ahp codespace <display-name-or-auto-name>
+
+# Connect to a Mission Control cloud environment
+/ahp cloud <environment-id>
+```
+
+From inside a running CLI session, `/ahp` commands manage everything:
+
+```
+/ahp status            # show host health and connected clients
+/ahp start [port]      # start a local AHP daemon
+/ahp stop <host>       # stop a daemon
+/ahp restart <host>    # restart a daemon
+/ahp sessions          # list sessions on the host
+/ahp hosts             # list all configured hosts
+/ahp use <host>        # switch the active source in the Sessions tab
+/ahp connect <url>     # add and connect to a host live
+```
+
+### AHP vs Remote Control
+
+| Feature | Remote Control (`--remote`) | AHP (`--ahp`) |
+|---------|----------------------------|---------------|
+| Purpose | Steer a single cloud agent task | Share sessions across terminals/machines |
+| Host | GitHub cloud environment | A local (or Codespace/cloud) AHP daemon |
+| Clients | One terminal at a time | Multiple simultaneous terminals |
+| Session persistence | Tied to the cloud task | Lives on the daemon host |
+| Best for | Monitoring coding agent PRs | Pair programming, multi-machine workflows |
+
+### Codespace Integration
+
+AHP makes it easy to work with sessions running inside a GitHub Codespace. The CLI forwards the Codespace's `copilotd` port over `gh` and adds it to the Sessions tab automatically:
+
+```bash
+/ahp codespace my-repo-abc123     # connect by auto-generated name
+/ahp codespace "My Dev Space"     # connect by display name
+```
+
+Once connected, the Codespace appears in the Sessions tab marked `CS`. Closing it (or typing `/ahp stop <name>`) tears down the tunnel cleanly.
+
+> **Tip**: If the Codespace connection fails with a scope error, run the suggested `gh auth refresh` command to grant the `codespace` scope.
 
 ## Hooks and the Coding Agent
 

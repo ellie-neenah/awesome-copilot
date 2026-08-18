@@ -3,7 +3,7 @@ title: 'Installing and Using Plugins'
 description: 'Learn how to find, install, and manage plugins that extend GitHub Copilot CLI with reusable agents, skills, hooks, and integrations.'
 authors:
   - GitHub Copilot Learning Hub Team
-lastUpdated: 2026-07-13
+lastUpdated: 2026-08-18
 estimatedReadingTime: '8 minutes'
 tags:
   - plugins
@@ -304,6 +304,43 @@ A: Yes. You can create a private plugin marketplace in an internal GitHub reposi
 **Q: What happens if I uninstall a plugin?**
 
 A: The plugin's agents, skills, and hooks are removed from Copilot, and any cached plugin data stored on disk is also cleaned up. Any work already done with those tools is unaffected — only future sessions lose access.
+
+## Breaking Changes
+
+### Plugin spec directory layout (v1.0.80+)
+
+> **Breaking change**: As of v1.0.80, Agent Plugins spec plugins (plugins that use the declarative file-based spec, not the older manifest-only format) now read their components **only** from a `com.github.copilot/` subdirectory inside the plugin root. The previous behavior of reading from the plugin root directly is no longer supported.
+
+This affects the following component locations:
+
+| Component | Old location (no longer read) | New location (required) |
+|-----------|-------------------------------|-------------------------|
+| Commands | `commands/` | `com.github.copilot/commands/` |
+| Agents | `agents/` | `com.github.copilot/agents/` |
+| Rules/instructions | `rules/` | `com.github.copilot/rules/` |
+| Hooks | `hooks/hooks.json` | `com.github.copilot/hooks/hooks.json` |
+| LSP config | `lsp.json` | `com.github.copilot/lsp.json` |
+| Extensions | `extensions/` | `com.github.copilot/extensions/` |
+
+**If you maintain a spec plugin**, update your plugin directory structure by moving the affected folders and files under `com.github.copilot/`. The `plugin.json` manifest and `README.md` remain at the plugin root.
+
+Example updated structure:
+
+```
+my-plugin/
+├── .github/
+│   └── plugin/
+│       └── plugin.json
+├── com.github.copilot/          # ← all spec components go here now
+│   ├── agents/
+│   │   └── api-architect.agent.md
+│   ├── hooks/
+│   │   └── hooks.json
+│   └── lsp.json
+└── README.md
+```
+
+> **Note**: Plugins published to the `awesome-copilot` marketplace have already been updated. If you installed a community plugin before v1.0.80, run `copilot plugin update` to pull the updated layout.
 
 ## Next Steps
 
