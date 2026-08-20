@@ -470,6 +470,16 @@ The settings dialog supports search — type to filter settings by name. Changes
 
 These flags mirror the **Repo** and **Repo (local)** scope tabs available in the `/settings` dashboard (v1.0.71+), making it easier to manage per-repository vs. user-global configuration without ambiguity. In v1.0.71+, the `/settings` dashboard also shows **Repo** and **Repo (local)** tabs alongside the existing user-level view, giving you a unified place to see which settings are applied at each layer.
 
+*(v1.0.79+)* The `/model` command is **session-scoped by default** — changing the model with `/model` now only affects the current session. To set a persistent default model for future sessions, use `/config model` instead:
+
+```
+/model               # pick a model for this session only
+/config model        # set the default model for all future sessions
+/model plan          # set a separate model to use while in plan mode
+```
+
+This separation means you can experiment with different models in a session without accidentally changing your long-term defaults.
+
 GitHub Copilot CLI has two commands for managing session state, with distinct behaviours:
 
 | Command | Behaviour |
@@ -487,6 +497,8 @@ The `/session rename` command renames the current session. When called **without
 ```
 
 Auto-generated names help you find sessions quickly when switching between multiple backgrounded sessions.
+
+*(v1.0.79+)* The **Sessions sidebar** lets you manage multiple concurrent sessions without leaving your current context. Open it with the **Sessions tab** in the split-view interface to see all active sessions, spawn new ones, and monitor their status at a glance. Each session runs independently — switching between them does not restart MCP servers or rebuild hook state.
 
 You can also name a session at startup with the `--name` flag, and resume it by name later:
 
@@ -557,6 +569,20 @@ This creates a branch named from your task description and begins working on it 
 
 After the command runs, the session is inside the new worktree. Use this when you want to work on a second task in parallel without stashing changes or opening a new terminal. In v1.0.64+ you can also use the experimental `--worktree` flag at startup (`copilot -w [name]`) to create or reuse a worktree under `<repo>.worktrees/` before the session begins.
 
+*(v1.0.79+)* Use `/worktree new` to start a fresh session in a brand-new worktree without specifying a branch name — the CLI picks one for you:
+
+```
+/worktree new
+```
+
+You can also control which base commit new worktrees start from with the `worktreeBaseRef` setting. By default all three (`/worktree`, `/worktree new`, and `--worktree`) start from HEAD. Set `worktreeBaseRef` to `"remote"` to start from the remote default branch instead:
+
+```json
+{
+  "worktreeBaseRef": "remote"
+}
+```
+
 The `/every` command (also available as `/loop` since v1.0.64) schedules a recurring prompt to run automatically at a specified interval. The companion `/after` command runs a prompt once after a specified delay. Both are useful for self-paced automation — polling for results, periodically summarizing progress, or triggering other slash commands on a timer:
 
 ```
@@ -625,7 +651,15 @@ The `/diagnose` command (v1.0.64+) analyzes the current session's logs and surfa
 
 Use `/diagnose` when a session is behaving unexpectedly — it inspects session logs and reports what it finds, making it easier to share diagnostics with support or understand what happened internally.
 
-**Keyboard shortcuts for queuing messages**: Use **Ctrl+Q** or **Ctrl+Enter** to queue a message (send it while the agent is still working). **Ctrl+D** no longer queues messages — it now has its default terminal behavior. If you have muscle memory for Ctrl+D queuing, switch to Ctrl+Q.
+The `/app` command *(v1.0.79+)* opens the current CLI session in the GitHub Copilot desktop app (requires Copilot app 1.1.3 or later), so you can seamlessly switch to the visual interface mid-session:
+
+```
+/app
+```
+
+Use `/app` when you want to hand off a CLI session to the app's multi-session view or inspect the session's timeline visually.
+
+**Keyboard shortcuts for queuing messages**: Use **Ctrl+Q** or **Ctrl+Enter** to queue a message (send it while the agent is still working). **Ctrl+D** no longer queues messages — it now has its default terminal behavior. If you have muscle memory for Ctrl+D queuing, switch to Ctrl+Q. *(v1.0.79+)* You can also queue slash commands and shell commands this way — they are held in a queue and execute in order after the current task finishes. Use the queue manager to reorder, edit, or remove queued items.
 
 **Background running tasks**: Press **Ctrl+X → B** to move the current running task or shell command to the background. The task continues executing while you can type a new message or review earlier output. This is useful for long-running commands where you want to interact with the agent while waiting for the result.
 
@@ -743,6 +777,14 @@ copilot --plan          # start in plan mode (propose without executing)
 ```
 
 This is useful in scripts or CI pipelines where you want the CLI to immediately begin working in a specific mode without an interactive prompt.
+
+*(v1.0.79+)* You can combine `--plan` with `--mode autopilot` to first produce a plan and then immediately implement it without pausing for your approval:
+
+```bash
+copilot --plan --mode autopilot "Migrate the auth module to use JWT"
+```
+
+This is useful for longer automated tasks where you want the agent to reason about its approach before executing, but don't need to review the plan interactively.
 
 The `--max-autopilot-continues` flag controls how many times Copilot can automatically continue in autopilot mode before pausing for confirmation. The default is 5:
 
