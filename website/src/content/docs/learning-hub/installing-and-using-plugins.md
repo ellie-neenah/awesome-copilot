@@ -182,6 +182,22 @@ Pinning to a SHA guarantees that everyone on the team installs plugins from exac
 - **Change control** — review and approve plugin updates before rolling them out team-wide
 - **Stability** — prevent breaking changes in upstream marketplaces from impacting your team without notice
 
+*(v1.0.79+)* To instead **auto-update a custom marketplace** to its latest version at session start, set `"autoUpdate": true` on the marketplace entry:
+
+```json
+{
+  "extraKnownMarketplaces": [
+    {
+      "name": "my-org-plugins",
+      "source": "my-org/internal-plugins",
+      "autoUpdate": true
+    }
+  ]
+}
+```
+
+With `autoUpdate` enabled, the CLI fetches the latest version of that marketplace automatically each time a session starts. This gives your team a rolling update experience without needing to pin SHAs or run `copilot plugin marketplace update` manually.
+
 ## Installing Plugins
 
 ### From Copilot CLI
@@ -221,6 +237,18 @@ copilot plugin marketplace update
 # Remove a plugin
 copilot plugin uninstall my-plugin
 ```
+
+*(v1.0.78+)* **First-party plugins** (those published to the built-in `awesome-copilot` marketplace) **auto-update to the latest version at session start** — you don't need to run `copilot plugin update` manually for them.
+
+### Enabling and Disabling Plugin Components
+
+*(v1.0.76+)* Use `/plugins` in an interactive session to enable or disable individual components — plugins, instructions, agents, LSP servers, and hooks — without uninstalling them:
+
+```
+/plugins                          # open the plugins manager
+```
+
+From the plugins manager you can toggle any component on or off for the current session. Disabled components are excluded from the session but remain installed and can be re-enabled at any time. This is useful for temporarily turning off a hook or agent that conflicts with a specific task.
 
 ### Loading Plugins from a Local Directory
 
