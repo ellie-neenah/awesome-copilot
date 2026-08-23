@@ -3,7 +3,7 @@ title: 'Installing and Using Plugins'
 description: 'Learn how to find, install, and manage plugins that extend GitHub Copilot CLI with reusable agents, skills, hooks, and integrations.'
 authors:
   - GitHub Copilot Learning Hub Team
-lastUpdated: 2026-07-13
+lastUpdated: 2026-08-23
 estimatedReadingTime: '8 minutes'
 tags:
   - plugins
@@ -182,6 +182,26 @@ Pinning to a SHA guarantees that everyone on the team installs plugins from exac
 - **Change control** — review and approve plugin updates before rolling them out team-wide
 - **Stability** — prevent breaking changes in upstream marketplaces from impacting your team without notice
 
+### Auto-Updating Marketplace Plugins
+
+*(v1.0.79+)* You can configure a marketplace entry to automatically update its plugins to the latest available version every time a new Copilot session starts. Add `"autoUpdate": true` to the marketplace entry in your settings:
+
+```json
+{
+  "extraKnownMarketplaces": [
+    {
+      "name": "my-org-plugins",
+      "source": "my-org/internal-plugins",
+      "autoUpdate": true
+    }
+  ]
+}
+```
+
+This is useful for always-current internal tooling where you want the latest version without manually running `copilot plugin update`. First-party plugins from the built-in `copilot-plugins` marketplace also auto-update at session start by default.
+
+> **Tip**: `autoUpdate` and `sha` are mutually exclusive — use `sha` when you need change control, and `autoUpdate` when you always want the latest.
+
 ## Installing Plugins
 
 ### From Copilot CLI
@@ -221,6 +241,24 @@ copilot plugin marketplace update
 # Remove a plugin
 copilot plugin uninstall my-plugin
 ```
+
+### Enabling and Disabling Plugins
+
+*(v1.0.76+)* You can temporarily enable or disable a plugin (and its individual components—agents, skills, hooks, MCP servers) without uninstalling it. Use the `/plugins` command in an interactive session:
+
+```
+/plugins enable my-plugin
+/plugins disable my-plugin
+```
+
+You can also target specific component types within a plugin using flags:
+
+```
+/plugins disable my-plugin --skill
+/plugins enable my-plugin --mcp
+```
+
+This is useful when you want to turn off a plugin's hooks during a specific task, or when debugging which plugin is causing an issue, without losing your installation.
 
 ### Loading Plugins from a Local Directory
 
