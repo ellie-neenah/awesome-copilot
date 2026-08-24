@@ -3,7 +3,7 @@ title: 'Copilot Configuration Basics'
 description: 'Learn how to configure GitHub Copilot at user, workspace, and repository levels to optimize your AI-assisted development experience.'
 authors:
   - GitHub Copilot Learning Hub Team
-lastUpdated: 2026-07-13
+lastUpdated: 2026-08-24
 estimatedReadingTime: '10 minutes'
 tags:
   - configuration
@@ -429,6 +429,8 @@ CLI settings use **camelCase** naming. Key settings added in recent releases:
 | `proxy` | HTTP(S) proxy URL for all outbound CLI requests (e.g., `http://proxy.example.com:8080`) (v1.0.64+) |
 | `sessionLimits` | Restrict credit or turn usage for a session; limits apply across the current conversation and reset on `/clear` (v1.0.66+) |
 | `stayInAutopilot` | Keep the CLI in autopilot mode after an autopilot task completes, instead of returning to interactive mode (v1.0.69+) |
+| `defaultMode` | Set the default startup mode for new interactive sessions: `interactive`, `plan`, or `autopilot` (v1.0.81-6+) |
+| `defaultPermissionMode` | Set the default approval behavior for new interactive sessions (v1.0.81-6+) |
 
 > **Note**: Older snake_case names (e.g., `include_gitignored`, `auto_updates_channel`) are still accepted for backward compatibility, but camelCase is now the preferred format.
 
@@ -443,7 +445,11 @@ These files follow the same format as `config.json` and are loaded after the glo
 
 ### Model Picker
 
-The model picker opens in a **full-screen view** with inline reasoning effort adjustment. Use the **← / →** arrow keys to change the reasoning effort level (`low`, `medium`, `high`) directly from the picker without leaving the session. The current reasoning effort level is also displayed in the model header (e.g., `claude-sonnet-4.6 (high)`) so you always know which level is active.
+The model picker opens in a **full-screen view** with inline reasoning effort adjustment. Use the **← / →** arrow keys to change the reasoning effort level (`low`, `medium`, `high`, or `xhigh`) directly from the picker without leaving the session. The current reasoning effort level is also displayed in the model header (e.g., `claude-sonnet-4.6 (high)`) so you always know which level is active.
+
+**Model data retention warnings** (v1.0.81-9+): The `/model` picker now shows data retention warnings with links for models that have specific data handling policies. Review these before selecting a model in compliance-sensitive environments.
+
+**xhigh reasoning effort** (v1.0.81-8+): The `xhigh` effort level is now supported for Grok 4.6. When available for a model, it appears alongside `low`, `medium`, and `high` in the effort picker.
 
 **Auto mode and server-side model routing** (v1.0.43+): When you select **Auto** as your model, the CLI uses server-side model routing for real-time model selection. Instead of locking in a single model at session start, Auto mode evaluates each request and routes it to the most appropriate model dynamically. This means straightforward questions can be handled by a faster model while complex reasoning tasks are automatically escalated — without you needing to switch models manually.
 
@@ -494,6 +500,8 @@ You can also name a session at startup with the `--name` flag, and resume it by 
 copilot --name "auth-refactor"          # start a session with a given name
 copilot --resume="auth-refactor"        # resume that session by name
 ```
+
+**Session restore on startup** (v1.0.81-7+): When sessions were left open (e.g. from a crash or machine restart), the CLI offers to restore them automatically at startup. Choose to restore one or more of the listed sessions, or decline to start fresh. No sessions are lost without your confirmation.
 
 The `/session delete` command removes sessions you no longer need:
 
@@ -626,6 +634,8 @@ The `/diagnose` command (v1.0.64+) analyzes the current session's logs and surfa
 Use `/diagnose` when a session is behaving unexpectedly — it inspects session logs and reports what it finds, making it easier to share diagnostics with support or understand what happened internally.
 
 **Keyboard shortcuts for queuing messages**: Use **Ctrl+Q** or **Ctrl+Enter** to queue a message (send it while the agent is still working). **Ctrl+D** no longer queues messages — it now has its default terminal behavior. If you have muscle memory for Ctrl+D queuing, switch to Ctrl+Q.
+
+**Voice dictation** (v1.0.81-7+): Press **Ctrl+Space** to toggle voice dictation on or off — speak your prompt instead of typing it. This is useful for longer, free-form requests or when you want to describe a task hands-free.
 
 **Background running tasks**: Press **Ctrl+X → B** to move the current running task or shell command to the background. The task continues executing while you can type a new message or review earlier output. This is useful for long-running commands where you want to interact with the agent while waiting for the result.
 
@@ -783,6 +793,14 @@ copilot --config-dir ~/.my-copilot-config
 ```
 
 Set `COPILOT_HOME` in your shell profile to use a custom config directory across all sessions. This is especially useful when running multiple Copilot configurations for different projects or teams.
+
+The `--with-token` flag for `copilot login` (v1.0.81-6+) lets you supply an authentication token via stdin instead of going through the browser or device-code flow:
+
+```bash
+echo "$MY_GITHUB_TOKEN" | copilot login --with-token
+```
+
+This is particularly useful in CI/CD pipelines, containers, or automation scripts where interactive browser-based authentication isn't possible.
 
 ### Shell Completion
 
