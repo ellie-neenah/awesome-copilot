@@ -3,7 +3,7 @@ title: 'Copilot Configuration Basics'
 description: 'Learn how to configure GitHub Copilot at user, workspace, and repository levels to optimize your AI-assisted development experience.'
 authors:
   - GitHub Copilot Learning Hub Team
-lastUpdated: 2026-07-13
+lastUpdated: 2026-08-25
 estimatedReadingTime: '10 minutes'
 tags:
   - configuration
@@ -429,6 +429,8 @@ CLI settings use **camelCase** naming. Key settings added in recent releases:
 | `proxy` | HTTP(S) proxy URL for all outbound CLI requests (e.g., `http://proxy.example.com:8080`) (v1.0.64+) |
 | `sessionLimits` | Restrict credit or turn usage for a session; limits apply across the current conversation and reset on `/clear` (v1.0.66+) |
 | `stayInAutopilot` | Keep the CLI in autopilot mode after an autopilot task completes, instead of returning to interactive mode (v1.0.69+) |
+| `defaultMode` | Set the default agent mode for new interactive sessions (`interactive`, `plan`, `autopilot`) (v1.0.81+) |
+| `defaultPermissionMode` | Set the default permission approval behavior for new sessions (v1.0.81+) |
 
 > **Note**: Older snake_case names (e.g., `include_gitignored`, `auto_updates_channel`) are still accepted for backward compatibility, but camelCase is now the preferred format.
 
@@ -444,6 +446,10 @@ These files follow the same format as `config.json` and are loaded after the glo
 ### Model Picker
 
 The model picker opens in a **full-screen view** with inline reasoning effort adjustment. Use the **← / →** arrow keys to change the reasoning effort level (`low`, `medium`, `high`) directly from the picker without leaving the session. The current reasoning effort level is also displayed in the model header (e.g., `claude-sonnet-4.6 (high)`) so you always know which level is active.
+
+**Model data retention warnings** (v1.0.81+): The `/model` picker now displays data retention warnings inline for models that have specific data handling policies, including links to relevant documentation. This makes it easier to make informed model choices when working with sensitive code or proprietary data.
+
+**xhigh reasoning effort** (v1.0.81+): For models that support it (currently Grok 4.6), an `xhigh` reasoning effort level is now available in addition to `low`, `medium`, and `high`. Use `xhigh` for the most computationally demanding tasks where maximum accuracy is worth the additional cost and latency.
 
 **Auto mode and server-side model routing** (v1.0.43+): When you select **Auto** as your model, the CLI uses server-side model routing for real-time model selection. Instead of locking in a single model at session start, Auto mode evaluates each request and routes it to the most appropriate model dynamically. This means straightforward questions can be handled by a faster model while complex reasoning tasks are automatically escalated — without you needing to switch models manually.
 
@@ -631,6 +637,8 @@ Use `/diagnose` when a session is behaving unexpectedly — it inspects session 
 
 **Shell command history in normal mode** (v1.0.65+): The **↑/↓** arrow keys and **Ctrl+R** reverse search now include past shell commands (commands run with `!`) while you are in normal (non-shell) input mode. Previously you had to type `!` to enter shell mode before history worked. Now you can recall and re-run a shell command without switching modes first — useful for quickly repeating a build, test, or diagnostic command from earlier in the session.
 
+**Voice dictation** (v1.0.81+): Press **Ctrl+Space** to toggle voice dictation on or off. When active, your speech is transcribed directly into the input field, letting you compose prompts hands-free. This is useful during code reviews or when your hands are occupied.
+
 **Inline image rendering** (v1.0.64+): The CLI can display images inline in the terminal when your terminal supports it. If an MCP tool, agent, or attachment returns an image, it is rendered directly in the conversation timeline rather than shown as a file path or URL. This works in terminals with image protocol support (such as iTerm2, Kitty, Wezterm, and tmux with appropriate configuration).
 
 The `/ask` command lets you ask a quick question without affecting your conversation history. The current session context is preserved, so you can use it for one-off lookups without derailing an ongoing task. Responses are rendered as full markdown, including tables and formatted links:
@@ -783,6 +791,14 @@ copilot --config-dir ~/.my-copilot-config
 ```
 
 Set `COPILOT_HOME` in your shell profile to use a custom config directory across all sessions. This is especially useful when running multiple Copilot configurations for different projects or teams.
+
+The `--with-token` flag for `copilot login` (v1.0.81+) reads an authentication token from stdin, enabling non-interactive login in CI/CD pipelines or scripts:
+
+```bash
+echo "$GITHUB_TOKEN" | copilot login --with-token
+```
+
+**Session restore** (v1.0.81+): When you restart the CLI after a crash or machine restart, it automatically offers to restore sessions that were still open when the CLI exited. This means you can pick up where you left off without manually reopening each terminal or recreating context.
 
 ### Shell Completion
 
