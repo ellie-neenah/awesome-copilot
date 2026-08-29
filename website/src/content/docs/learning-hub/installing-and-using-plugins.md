@@ -3,7 +3,7 @@ title: 'Installing and Using Plugins'
 description: 'Learn how to find, install, and manage plugins that extend GitHub Copilot CLI with reusable agents, skills, hooks, and integrations.'
 authors:
   - GitHub Copilot Learning Hub Team
-lastUpdated: 2026-07-13
+lastUpdated: 2026-08-29
 estimatedReadingTime: '8 minutes'
 tags:
   - plugins
@@ -114,11 +114,15 @@ Browse plugins in a specific marketplace:
 copilot plugin marketplace browse awesome-copilot
 ```
 
-Or from within an interactive Copilot session:
+Or open the **unified plugins dashboard** from within an interactive Copilot session. As of v1.0.81, running any of these commands opens the same dashboard:
 
 ```
-/plugin marketplace browse awesome-copilot
+/plugin                              # opens the plugins dashboard
+/mcp                                 # also opens the plugins dashboard
+/skills                              # also opens the plugins dashboard
 ```
+
+The dashboard shows all your installed plugins, agents, skills, MCP servers, hooks, and instructions in one place. Use `/subagents` to manage agents and `/instructions` to manage instruction files directly.
 
 > **Tip**: You can also browse plugins on this site's [Plugins Directory](../../plugins/) to see descriptions, included agents, and skills before installing.
 
@@ -152,13 +156,16 @@ To automatically register an additional marketplace for everyone working in a re
   "extraKnownMarketplaces": [
     {
       "name": "my-org-plugins",
-      "source": "my-org/internal-plugins"
+      "source": "my-org/internal-plugins",
+      "autoUpdate": true
     }
   ]
 }
 ```
 
 With this in place, team members automatically get the `my-org-plugins` marketplace available without running a separate `marketplace add` command. This replaces the older `marketplaces` setting, which was removed in v1.0.16.
+
+Set `"autoUpdate": true` *(v1.0.79+)* to automatically update all plugins from that marketplace at session start — no manual `copilot plugin update` required.
 
 ### Pinning a Marketplace to a Specific Commit
 
@@ -221,6 +228,8 @@ copilot plugin marketplace update
 # Remove a plugin
 copilot plugin uninstall my-plugin
 ```
+
+> **Update notifications** *(v1.0.81+)*: The plugins dashboard (`/plugin`) automatically flags installed plugins and marketplaces that have a newer version available upstream, and offers a one-click **Update** action to pull the latest version. First-party plugins (from the official `copilot-plugins` marketplace) update automatically at session start.
 
 ### Loading Plugins from a Local Directory
 
