@@ -3,7 +3,7 @@ title: 'Installing and Using Plugins'
 description: 'Learn how to find, install, and manage plugins that extend GitHub Copilot CLI with reusable agents, skills, hooks, and integrations.'
 authors:
   - GitHub Copilot Learning Hub Team
-lastUpdated: 2026-07-13
+lastUpdated: 2026-08-29
 estimatedReadingTime: '8 minutes'
 tags:
   - plugins
@@ -204,6 +204,22 @@ Or from an interactive session:
 
 Browse to the plugin via `@agentPlugins` in the Extensions search view or via **Chat: Plugins** in the Command Palette, then click **Install**.
 
+## The Plugins Dashboard (v1.0.81+)
+
+As of v1.0.81, Copilot CLI includes a unified **Plugins Dashboard** — an interactive terminal UI for browsing and managing your installed plugins, MCP servers, skills, agents, and instructions. Open it from inside any interactive session:
+
+```
+/plugin       # open the plugins dashboard
+/mcp          # view and configure MCP servers
+/skills       # browse installed skills
+/subagents    # configure subagent settings
+/instructions # view loaded instruction files
+```
+
+The dashboard shows all installed plugins, highlights any that have a newer version available upstream, and provides an **Update** action you can trigger directly — no need to run a separate command. You can also enable or disable individual components from within the dashboard.
+
+> **Breaking change (v1.0.81)**: The older `/plugins` command was removed. If your workflows or documentation reference `/plugins`, update them to use `/plugin`, `/mcp`, `/skills`, `/subagents`, or `/instructions` as appropriate.
+
 ## Managing Plugins
 
 Once installed, plugins are managed with a few simple commands:
@@ -231,6 +247,18 @@ copilot --plugin-dir /path/to/my-plugin
 ```
 
 Plugins loaded this way appear in `/plugin list` under a separate **External Plugins** section, clearly distinguished from marketplace-installed plugins. This is useful for testing local plugins in development or loading private plugins that aren't published to any marketplace.
+
+As of v1.0.81, path-sourced plugins (loaded via `--plugin-dir` or as a local marketplace source) are read live from their directory — changes to plugin files take effect on `/restart` or in a new session without needing a manual `copilot plugin update`.
+
+### Loading Local Agents and Skills with `--add-dir`
+
+To make individual agents and skills from a local directory available in your session — without packaging them as a full plugin — use the `--add-dir` flag:
+
+```bash
+copilot --add-dir /path/to/my-agents-and-skills
+```
+
+The CLI scans the directory for `.agent.md` files and skill folders, adding them to your current session. This is handy for testing changes to agents and skills during development.
 
 ### Where Plugins Are Stored
 

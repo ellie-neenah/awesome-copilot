@@ -3,10 +3,7 @@ title: 'Automating with Hooks'
 description: 'Learn how to use hooks to automate lifecycle events like formatting, linting, and governance checks during Copilot agent sessions.'
 authors:
   - GitHub Copilot Learning Hub Team
-lastUpdated: 2026-07-13
-estimatedReadingTime: '8 minutes'
-tags:
-  - hooks
+lastUpdated: 2026-08-29
   - automation
   - fundamentals
 relatedArticles:
@@ -101,6 +98,27 @@ Hooks can trigger on several lifecycle events:
 | `errorOccurred` | An error occurs during agent execution | Log errors for debugging, send notifications, track error patterns |
 
 > **Key insight**: The `preToolUse` hook is the most powerful — it can **approve or deny** individual tool executions. This enables fine-grained security policies like blocking specific shell commands or requiring approval for sensitive file operations.
+
+### OpenTelemetry Trace Context in Hook Inputs (v1.0.81+)
+
+As of v1.0.81, all hook inputs include the current **OpenTelemetry trace context**, enabling hooks to emit correlated spans that appear alongside Copilot's own telemetry in your observability platform.
+
+All hook events receive a `traceparent` field in their JSON input (and a `tracestate` field when the originating span carries vendor state). For `command`-type hooks, the trace context is also forwarded as environment variables:
+
+- `TRACEPARENT` — the W3C trace parent header value
+- `TRACESTATE` — the W3C trace state header value (when present)
+
+Example: reading the trace context in a hook script:
+
+```bash
+#!/usr/bin/env bash
+INPUT=$(cat)
+TRACE_PARENT=$(echo "$INPUT" | jq -r '.traceparent // empty')
+# Emit a correlated span to your observability backend
+otelcontribcol --traceparent="$TRACE_PARENT" ...
+```
+
+This is most useful for teams running Copilot in monitored environments who want agent activity visible in the same traces as their application code.
 
 ### sessionStart additionalContext
 
