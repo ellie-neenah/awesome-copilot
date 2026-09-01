@@ -3,7 +3,7 @@ title: 'Installing and Using Plugins'
 description: 'Learn how to find, install, and manage plugins that extend GitHub Copilot CLI with reusable agents, skills, hooks, and integrations.'
 authors:
   - GitHub Copilot Learning Hub Team
-lastUpdated: 2026-07-13
+lastUpdated: 2026-08-29
 estimatedReadingTime: '8 minutes'
 tags:
   - plugins
@@ -92,6 +92,22 @@ Plugins are especially valuable when you want to:
 - **Share domain expertise** — Package a Rails expert, Kubernetes specialist, or security reviewer as an installable unit
 - **Encapsulate complex setups** — Bundle MCP server configurations that would otherwise require manual setup
 - **Reuse across projects** — Install the same capabilities in every project without duplicating files
+
+## The Plugins Dashboard
+
+*(v1.0.81+)* The **Plugins Dashboard** is a unified management interface for all plugin-related resources. Open it from an interactive Copilot session with any of these commands:
+
+```
+/plugin      ← manage plugins and marketplaces
+/mcp         ← manage MCP servers
+/skills      ← browse and invoke skills
+/subagents   ← view available agents
+/instructions ← view active instruction files
+```
+
+> **Note**: The legacy `/plugins` command was removed in v1.0.81. All of its capabilities have moved to these dedicated commands.
+
+The `/plugin` command also **highlights outdated plugins** — when an installed plugin has a newer version available upstream, it shows an Update action you can trigger in-place without leaving the session.
 
 ## Finding Plugins
 
@@ -220,6 +236,24 @@ copilot plugin marketplace update
 
 # Remove a plugin
 copilot plugin uninstall my-plugin
+```
+
+### Automatic Updates
+
+*(v1.0.78+)* First-party plugins automatically update to the latest version at session start. For community and third-party plugins, run `/plugin` in an interactive session — it flags any installed plugins with newer versions available and offers a one-click **Update** action.
+
+To enable auto-updates for a specific marketplace entry, add `"autoUpdate": true` to its `extraKnownMarketplaces` configuration:
+
+```json
+{
+  "extraKnownMarketplaces": [
+    {
+      "name": "my-org-plugins",
+      "source": "my-org/internal-plugins",
+      "autoUpdate": true
+    }
+  ]
+}
 ```
 
 ### Loading Plugins from a Local Directory
